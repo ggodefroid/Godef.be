@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>godef.be</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    <link href="styles/main.css" rel="stylesheet" type="text/css">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/xd.svg">
+</head>
+<body>
+
+
+
+<div id="main-menu" class="p-2">
+    <img src="images/profil.png" alt="logo" id="logoProfil">
+    <hr>
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+        <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+        <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+    </ul>
+
+</div>
+
+<div class="p-2">
+    <header>
+        <h1>
+            <strong>CapibaraZero</strong>
+        </h1>
+    </header>
+    <div id="foxo"></div>
+    <main>
+        <div class="haut-de-page">
+            <div class="projet">
+                <section class="mb-5">
+                    <h2>Wanted Goal</h2>
+                    <p>
+                        Thanks to this open-source
+                        <a href="https://github.com/CapibaraZero" target="_blank">
+                            GitHub</a>
+                        project, which aims to provide a cheaper alternative
+                        to the Flipper Zero, based on the ESP32. Its chip alone is capable of efficiently handling Wi-Fi
+                        and Bluetooth (unlike the Flipper Zero with its STM32, which requires an additional module
+                        containing an ESP32 to manage Wi-Fi).
+                    </p>
+                    <p>
+                        To create this device, you can find a list of components to purchase :
+
+                    <ul>
+                        <li>Soc :
+                            <a href="https://fr.aliexpress.com/item/1005006266375800.html" target="_blank">
+                                ESP32-S3 N16R8 Devkit
+                            </a>
+                        </li>
+                        <li>TFT Screen :
+                            <a href="https://fr.aliexpress.com/item/1005007346976745.html" target="_blank">
+                                ST7789 1.54 Inch
+                            </a>
+                        </li>
+                        <li>NFC Module :
+                            <a href="https://fr.aliexpress.com/item/1005006440663319.html" target="_blank">
+                                PN532
+                            </a>
+                        </li>
+                        <li>Radio frequence Module : :
+                            <a href="https://fr.aliexpress.com/item/1005005096327373.html" target="_blank">
+                                915M
+                            </a>
+                        </li>
+                        <li>Micro sd card reader :
+                            <a href="https://fr.aliexpress.com/item/1005005591145849.html" target="_blank">
+                                Random Tf Micro SD Card reader
+                            </a>
+                        </li>
+                        <li>Micro sd card :
+                            <a href="https://fr.aliexpress.com/item/1005007585643804.html" target="_blank">
+                                Random 8Gb
+                            </a>
+                        </li>
+                    <li>IR emmeter and reveiver:
+                        <ul>
+                            <li>
+                                <a href="https://fr.aliexpress.com/item/1005006411960201.html" target="_blank">
+                                    5mm Emitter
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://fr.aliexpress.com/item/1005004795185418.html" target="_blank">
+                                    Receiver
+                                </a>
+                            </li>
+                        </ul>
+
+
+
+                    </li>
+                        <li>Pcb charger module :
+                            <a href="https://fr.aliexpress.com/item/1005006191578119.html" target="_blank">
+                                18650 Type-c
+                            </a>
+                        </li>
+                        <li>Battery :
+                            <a href="https://fr.aliexpress.com/item/1005006179427213.html" target="_blank">
+                                103450
+                            </a>
+                        </li>
+
+
+
+                    </ul>
+
+                    </p>
+                    
+                </section>
+                <section class="mb-5">
+                    <h2>Note</h2>
+                    <p>
+                        FlipperZero and Capibarazero are pentesting devices. Only for security testing purposes.
+                        All illegal or deviant usage is strictly prohibited.
+                    </p>
+                </section>
+                <section class="mb-5">
+                    <h2>Wiring</h2>
+                    <p>
+                        The electrical schematic :
+
+                    </p>
+                    <img src="images/projet/Electrical_diagram.png" class="img-fluid rounded mb-3" alt="Illustration 4">
+
+                </section>
+                <section class="mb-5">
+                    <h2>CapibaraZero box</h2>
+                    <p>
+                        In the,
+                        <a>GitHub repository</a>
+                        you can find the STL file for the 3D-printable case.
+                        I have created a more complex case, which you can download <a href="https://makerworld.com/fr/models/854126-capibarazero-case?from=search#profileId-802981">[here on Maker World]<a>.
+                        I will continue this tutorial using my version of the case.
+                        
+                    </p>
+
+                </section>
+                </section>
+                <section class="mb-5">
+                    <h2>firmware installation</h2>
+                    <p>
+                        requipment :
+                        <ul>
+                            <li>
+                                Have esptool : <a href="https://github.com/espressif/esptool" target="_blank">Link</a>
+                            </li>
+                            <li>
+                                Download the <a href="https://github.com/CapibaraZero/fw/releases" target="_blank">lastest firmware</a> #For my part, this was the version 0.5.1
+                            </li>
+
+                        </ul>
+
+                    </p>
+
+                </section>
+                <section class="mb-5">
+                    <h2>what I use it for</h2>
+                    <p>
+                        Wi-Fi Portal: set up a Wi-Fi network that redirects users to a captive portal hosting a website showcasing my job search status.                    </p>
+
+                    <p>
+                        Remote PDF Control: I plan to develop a Java script that allows the Capibara device, once connected to a PC via Bluetooth, to remotely control PDF slides. This will be used to present my end-of-year project.                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>To be continued…</h2>
+                </section>
+            </div>
+        </div>
+    </main>
+    <div class="contacts">
+        <div class="contact-item">
+            <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+        </div>
+        <div class="contact-item">
+            <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+        </div>
+    </div>
+    <footer class="text-center">
+        <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+        </p>
+    </footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>
+		

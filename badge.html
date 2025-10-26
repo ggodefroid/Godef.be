@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Badge Holder — godef.be</title>
+
+    <!-- Framework & icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet">
+
+    <link href="styles/main.css" rel="stylesheet" type="text/css">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/xd.svg">
+</head>
+<body>
+
+<!-- ===== Left navigation bar ===== -->
+<div id="main-menu" class="p-2">
+    <img src="images/profil.png" alt="logo" id="logoProfil">
+    <hr>
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+        <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+        <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+    </ul>
+</div>
+
+<!-- ===== Page content ===== -->
+<div class="p-2">
+    <header>
+        <h1><strong>Badge Holder</strong></h1>
+    </header>
+    <div id="foxo"></div>
+
+    <main>
+        <div class="projet">
+            <div class="haut-de-page">
+                <!-- NEED -->
+                <section class="mb-5">
+                    <h2>The need</h2>
+                    <p>Graduation forums are packed with students. To stand out, I decided to craft an electronic badge holder inspired by <a href="https://defcon.org" target="_blank">DEF CON</a> badges. It holds a standard business card yet flashes skills in hardware, firmware and 3‑D design.</p>
+                    <ul>
+                        <li><strong>Eye‑catching LEDs :</strong> 24 WS2812B around the frame.</li>
+                        <li><strong>Brain :</strong> ESP8266 flashed with WLED 0.14.</li>
+                        <li><strong>NFC :</strong> tap the badge → opens my portfolio (HTTPS + GPG fingerprint).</li>
+                        <li><strong>Runtime :</strong> ~6 h on a 2000 mAh Li‑Po at 25 % brightness.</li>
+                    </ul>
+                </section>
+
+                <!-- BOM -->
+                <section class="mb-5">
+                    <h2>Bill of Materials</h2>
+                    <p>All components are cheap, easy to source:</p>
+                    <ul>
+                        <li>1× <strong>Wemos D1 Mini V4</strong> (ESP8266)</li>
+                        <li>24× <strong>WS2812B</strong> LEDs (cut from 144 LED/m strip)</li>
+                        <li>1× <strong>Li‑Po 604050 – 2000 mAh</strong></li>
+                        <li>1× <strong>TP4056</strong> USB‑C charger / 5 V boost</li>
+                        <li>PETG translucent filament for the case</li>
+                    </ul>
+                </section>
+
+                <!-- Schematic -->
+                <section class="mb-5">
+                    <h2>Schematic</h2>
+                    <img src="images/projet/Wled_badge_schematics.png" class="img-fluid rounded mb-3" alt="schematic">
+                    <p class="small">Data on GPIO2 (D4). Brightness limited to 350 mA in WLED to protect the boost converter.</p>
+                </section>
+
+                <!-- 3‑D case -->
+                <section class="mb-5">
+                    <h2>3‑D printed case</h2>
+                    <p>The design is a two‑part sandwich: translucent front window, opaque back shell. Slide the core out to swap front plates or access electronics. M3 brass inserts hold everything together, and a 1 mm recess diffuses the LED ring.</p>
+
+                    <img src="images/projet/3d_badge.png" alt="render">
+                    <img src="images/projet/badge_interior.jpg" alt="interior">
+
+                </section>
+
+                <!-- Firmware -->
+                <section class="mb-5">
+                    <h2>Firmware & palettes</h2>
+                    <p>Flash WLED:</p>
+                    <div class="shell-block"><pre><code>esptool.py write_flash 0x00000 WLED_0.14.0.bin</code></pre></div>
+                    <p>Then set LED count to 24, max current to 350 mA and enjoy 100 + built‑in palettes. Demo of “Palette 28” below:</p>
+                    <div class="image-row">
+
+                    <img src="images/projet/PAL_28.gif" class="img-fluid rounded" alt="palette demo">
+                    </div>
+                </section>
+
+                <!-- Future -->
+                <section class="mb-5">
+                    <h2>Future ideas</h2>
+                    <ul>
+                        <li>BLE iBeacon for presence in Home Assistant.</li>
+                        <li>E‑Ink front plate for daylight readability.</li>
+                        <li>Qi wireless charging pad behind the badge.</li>
+                    </ul>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== Footer ===== -->
+    <div class="contacts">
+        <div class="contact-item"><i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a></div>
+        <div class="contact-item"><i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">LinkedIn</a></div>
+    </div>
+    <footer class="text-center"><p>© Germain Godefroid, <script>document.write(new Date().getFullYear());</script></p></footer>
+</div><!-- /.p-2 wrapper -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

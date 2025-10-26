@@ -1,0 +1,142 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>godef.be</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    <link href="styles/main.css" rel="stylesheet" type="text/css">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/xd.svg">
+</head>
+<body>
+
+
+
+<div id="main-menu" class="p-2">
+    <img src="images/profil.png" alt="logo" id="logoProfil">
+    <hr>
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+        <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+        <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+    </ul>
+
+</div>
+
+<div class="p-2">
+    <header>
+        <h1>
+            <strong>LoRa Over Usb</strong>
+        </h1>
+    </header>
+    <div id="foxo"></div>
+    <main>
+        <div class="haut-de-page">
+            <div class="projet">
+                <section class="mb-5">
+                    <h2>Wanted Goal</h2>
+                    <p>
+                        To have a case containing the hardware, capable of receiving and sending LoRa 443MHz signals at any time.
+                        So, a need for a small and highly portable case.
+                    </p>
+                    <p>
+                        This project implements a bidirectional LoRa communication system using an ESP32 board equipped
+                        with a LoRa module. The primary goal is to listen to and display all received LoRa packets while
+                        allowing messages to be sent via LoRa at any time. The project is designed to operate without
+                        `syncWord` management, enabling universal reception of all LoRa messages.
+                    </p>
+
+                    <p>
+                        For the build, i took the components I had on hand.
+                    <ul>
+                        <li>Soc :
+                            <a href="https://fr.aliexpress.com/item/1005005264331899.html" target="_blank">
+                                ESP32 TYPE-C 30PIN</a>
+                        </li>
+                        <li>LoRa module :
+                            <a href="https://fr.aliexpress.com/item/1005006864170059.html" target="_blank">
+                                Ra-01 LoRa SX1278 433M</a>
+                        </li>
+
+                    </ul>
+
+                    </p>
+
+                </section>
+                <section class="mb-5">
+                    <h2>Note</h2>
+                    <p>
+
+
+                        Be sure to check whether these frequencies can be used in your country. In my case, it's fine, but you
+                        <a href="https://www.ibpt.be/file/cc73d96153bbd5448a56f19d925d05b1379c7f21/90d125f415d53798041bcd2f40fd03699f85efb9/b24-fr.pdf#page=94"target="_blank">
+                            should verify</a>
+                        on the relevant website or regulatory body of your country, such as
+                        <a href="https://www.ibpt.be/operateurs/plan-des-frequences"target="_blank">
+                            ibpt</a>
+                        for belgium.
+                        For us, it's considered a non-specific Short-Range Device (SRD). We won't exceed 10 watts of power,
+                        and we will use less than 10% of the overall channel utilization, especially since this is for just one plant.
+                    </p>
+                    <img src="images/projet/reglementationbe.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+                </section>
+                </section>
+                <section class="mb-5">
+                    <h2>Hardware schematic + Firmware installation</h2>
+                    <p>
+                        The electrical schematic :
+                        <img src="images/projet/gatewayboxschema.png" class="img-fluid rounded mb-3" alt="Illustration 4">
+
+                    </p>
+                    <p>
+                        code :
+                        <a href="LoRaOverUsb_code.html"target="_blank">
+                            [here]</a>
+                        if you're interested. Again this code was for testing purposes and it might be not very clean.
+
+                    </p>
+                </section>
+                <section class="mb-5">
+                    <h2>Create a little box</h2>
+                    <p>
+                        I launched Fusion 360, entered the dimensions to create a case that is small, highly portable, and very sturdy, so I can have it with me at all times.
+                    </p>
+
+                </section>
+
+                <section class="mb-5">
+                    <h2>Build</h2>
+                    <p>
+                        I simply merged everything together and tested it. Now, I have a case that can connect via serial,
+                        with a screen on Linux or the Serial USB Terminal app on Android, allowing me to send or receive LoRa messages at any time.
+                    </p>
+
+                    <img src="images/projet/builted_lora_to_usb.png" class="img-fluid rounded mb-3" alt="Illustration 3">
+                </section>
+
+            </div>
+        </div>
+    </main>
+    <div class="contacts">
+        <div class="contact-item">
+            <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+        </div>
+        <div class="contact-item">
+            <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+        </div>
+    </div>
+    <footer class="text-center">
+        <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+        </p>
+    </footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>
+		

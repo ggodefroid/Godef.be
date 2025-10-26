@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>godef.be</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    <link href="../styles/main.css" rel="stylesheet" type="text/css">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/foxsvg.svg">
+</head>
+<body>
+
+<div id="main-menu" class="p-2">
+    <img src="../images/profil.png" id="logoProfil">
+    <hr>
+
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+        <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+        <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+    </ul>
+</div>
+
+<main class="p-2">
+    <header>
+        <h1>
+            <strong>WledNas Code</strong>
+        </h1>
+    </header>
+    <div id="foxo"></div>
+    <main>
+        <div class="haut-de-page">
+
+            <div class="GPGkey">
+                <pre>import requests
+from datetime import datetime
+import subprocess
+import time
+import logging
+import discord
+
+effects_load = [28, 111, 67, 46, 156, 157]
+effects_idle = [9, 63, 108, 8, 74, 90, 110, 138]
+
+ip = "" #Ip of the Wled
+
+logging.basicConfig(format='%(asctime)s : %(message)s', datefmt='%Y-%m-%d %H:%M:%S', level=logging.DEBUG)
+
+while True:
+    sd_read = subprocess.run(["iostat 1 2|grep -E \'sda|sdb|sdc|sdd\' |awk \'{print $3}\'|tail -4"], capture_output=True,
+                                text=True, shell=True).stdout.strip().splitlines()
+    disks_read = 0
+    for x in sd_read:
+        disks_read += int(x.strip().split(",")[0])
+    disks_read = disks_read // 4
+
+
+    sda_wrt = subprocess.run(["iostat 1 2|grep -E \'sda|sdb|sdc|sdd\' |awk \'{print $4}\'|tail -4"], capture_output=True,
+                               text=True, shell=True).stdout.strip().splitlines()
+    disks_wrt = 0
+    for x in sda_wrt:
+        disks_wrt += int(x.strip().split(",")[0])
+    disks_wrt = disks_wrt // 4
+
+    moy = int(disks_read) + int(disks_wrt) // 2
+
+    print( moy)
+    if 7 > datetime.now().hour or datetime.now().hour >= 23:
+        effect_id = 38
+        light_level = 35
+        palette_id = 50
+
+    elif moy > 1000:
+        choix = datetime.now().day % len(effects_load)
+        effect_id = effects_load[choix]
+        light_level = 200
+        palette_id = 0
+
+    else:
+        choix = datetime.now().day % len(effects_idle)
+        effect_id = effects_idle[choix]
+        light_level = 200
+        palette_id = 11
+
+
+    sd_list = subprocess.run(['ls /dev |grep -E "^sd[abcd]$"'], capture_output=True, text=True, shell=True).stdout.strip().splitlines()
+    if len(sd_list) < 4:
+        break
+    else:
+        requests.get(f"http://{ip}/win&A={light_level}&FP={palette_id}&TT={0}&FX={effect_id}",timeout=7)
+    time.sleep(10)
+
+#if a drive got disconnected, i got alerted in discord
+client = discord.Client(intents=discord.Intents.default())
+@client.event
+async def on_ready():
+    print(f'Logged in as {client.user}!')
+    user = await client.fetch_user(268733669907103744)
+    await user.send(f"[+] : Un disque de l'array du NAS s'est déconnecté il y a actuellement => {sd_list}")
+    await client.close()
+client.run("") #Discord API Key
+c = 0
+while c < 10:
+    requests.get(f"http://{ip}/win&A={200}&FP={66}&TT={0}&FX={184}",timeout=7)
+    time.sleep(10)
+    c += 1
+
+</pre>
+            </div>
+    </main>
+    <div class="contacts">
+        <div class="contact-item">
+            <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+        </div>
+        <div class="contact-item">
+            <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+        </div>
+    </div>
+    <footer class="text-center">
+        <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+        </p>
+    </footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>

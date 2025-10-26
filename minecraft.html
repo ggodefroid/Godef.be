@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>godef.be</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+  <link href="styles/main.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/xd.svg">
+</head>
+<body>
+
+
+
+<div id="main-menu" class="p-2">
+  <img src="images/profil.png" alt="logo" id="logoProfil">
+  <hr>
+  <ul class="nav nav-pills flex-column">
+    <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+    <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+    <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+    <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+  </ul>
+
+</div>
+
+<div class="p-2">
+  <header>
+    <h1>
+      <strong>Minecraft Server Wake on load</strong>
+    </h1>
+  </header>
+  <div id="foxo"></div>
+  <main>
+    <div class="projet">
+
+      <div class="haut-de-page">
+        <section class="mb-5">
+          <h2>Wanted Goal</h2>
+          <p>
+            I currently have a Minecraft server running for my needs on an i7 4770 server with 16GB of DDR3 RAM. The performance is good enough for a cheap server, but with energy costs rising, it pains me to leave this PC running 24/7 (even when no one is connected to the server).
+            That's where this idea came from: running a Minecraft lobby server on my mini PC with an
+            <a href="https://ark.intel.com/content/www/us/en/ark/products/231803/intel-processor-n100-6m-cache-up-to-3-40-ghz.html">
+              Intel N100
+            </a>
+            which consumes almost nothing compared to the i7. When a player connects, the lobby server should be able to wake up the more powerful i7 PC, which consumes more energy but has better performance, to make the survival server available. The N100 will only run the lobby server, where players will connect, and as soon as they do, a script will wake up the i7 PC via Wake-on-LAN, which will then open the connection to the Minecraft survival server.
+
+
+          </p>
+
+
+        </section>
+
+        <section class="mb-5">
+          <h2>Security</h2>
+          <p>
+            I want these services to run in a VLAN separate from my main network. Since my Minecraft server is accessible to the world, I want to ensure that even if it gets compromised, I have time to detect it before an attacker can do any real harm.
+
+            For this reason, I will place both machines in a VLAN separate from my private network. I will apply necessary updates as soon as possible (or even set them to automatic, though I'm not sure yet).
+
+            Additionally, I will set up extensive logging with a Wazuh server, firewall, Grafana statistics, and alerts to properly monitor both machines. Everything will be fully containerized with Docker.
+
+          </p>
+        </section>
+
+        <section class="mb-5">
+          <h2>production</h2>
+          The setup ended up being different...
+
+          I was in a hurry to make the server accessible to my friends, but after realizing that no one was connecting, I decided to go for a simpler solution.
+
+          So, I created a Python script that manages a Discord bot. This bot responds to commands entered in a private Discord channel to turn the i7 server on or off.
+
+          Currently, my main server runs Proxmox, which manages a VM where Minecraft is hosted.
+
+          The Python script controlling the bot runs on my N100, and when the power-on command is entered in Discord, it sends a Wake-on-LAN magic packet to the Proxmox server. This turns on the Proxmox server, which automatically starts the Minecraft VM.
+
+          But that was without considering the fact that my friends would forget or simply not take the time to turn off the machine. That’s why I created a second auto-shutdown script on the Proxmox hypervisor.
+
+          On the Proxmox hypervisor, a script runs under a user named "minecraft" (with no special privileges). This script connects to the mcstatus service to check how many players are currently on the Minecraft server.
+
+          If no players have been connected for more than 20 minutes, the script shuts down the Minecraft VM and then powers off the Proxmox server.
+
+          <img src="images/projet/minecraft_archi.png" class="img-fluid rounded mb-3" alt="Illustration 4">
+
+        </section>
+
+
+      </div>
+
+    </div>
+</div>
+</main>
+<div class="contacts">
+  <div class="contact-item">
+    <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+  </div>
+  <div class="contact-item">
+    <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+  </div>
+</div>
+<footer class="text-center">
+  <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+  </p>
+</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>
+		

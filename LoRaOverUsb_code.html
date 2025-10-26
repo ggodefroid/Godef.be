@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>godef.be</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+  <link href="../styles/main.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/foxsvg.svg">
+</head>
+<body>
+
+<div id="main-menu" class="p-2">
+  <img src="../images/profil.png" id="logoProfil">
+  <hr>
+
+  <ul class="nav nav-pills flex-column">
+    <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+    <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+    <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+    <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+  </ul>
+</div>
+
+<main class="p-2">
+  <header>
+    <h1>
+      <strong>LoRaOverUsb code</strong>
+    </h1>
+  </header>
+  <div id="foxo"></div>
+  <main>
+    <div class="haut-de-page">
+
+      <div class="GPGkey">
+                <pre>#include &lt;LoRa.h&gt;
+
+// Définir les pins utilisés par le module transceiver
+#define ss 5
+#define rst 14
+#define dio0 2
+
+void setup() {
+  // Initialisation du port série pour afficher les paquets reçus
+  Serial.begin(115200);
+  Serial.println("LoRa Receiver Initialized...");
+
+  // Initialisation des broches LoRa
+  LoRa.setPins(ss, rst, dio0);
+
+  // Initialisation du module LoRa
+  while (!LoRa.begin(433E6)) { // Fréquence en Hz (ici 433 MHz)
+    Serial.println("Initializing LoRa...");
+    delay(500);
+  }
+
+  Serial.println("LoRa Initialized. Waiting for packets...");
+}
+
+void loop() {
+  // Vérification de la réception de paquets LoRa
+  int packetSize = LoRa.parsePacket();
+  if (packetSize) {
+    // Variables pour stocker les données reçues
+    String receivedData;
+    int rssi = LoRa.packetRssi();
+
+    // Lecture et construction de la chaîne textuelle reçue
+    while (LoRa.available()) {
+      char c = LoRa.read();
+      receivedData += c;
+    }
+
+    // Affichage du message en clair et RSSI
+    Serial.print("↓ [RSSI: ");
+    Serial.print(rssi);
+    Serial.print("] : ");
+    Serial.println(receivedData);
+
+    // Affichage d'une ligne vide pour séparer le texte et les données hexadécimales
+    Serial.println();
+
+    // Affichage des données brutes en hexadécimal
+    Serial.print("[RAW_HEX] : ");
+    for (int i = 0; i < receivedData.length(); i++) {
+      Serial.print((uint8_t)receivedData[i], HEX); // Affiche l’octet en HEX
+      Serial.print(" "); // Sépare les octets par un espace
+    }
+    Serial.println(); // Nouvelle ligne à la fin
+  }
+
+  // Vérification si l'utilisateur entre une donnée via le moniteur série pour envoyer un message
+  if (Serial.available()) {
+    String input = Serial.readStringUntil('\n'); // Lire la chaîne jusqu'à la nouvelle ligne
+    input.trim(); // Nettoyer les espaces inutiles
+
+    // Envoi du message via LoRa
+    if (input.length() > 0 && input.length() < 128) { // Vérification que le message ne dépasse pas 128 caractères
+      // Afficher le message avec la flèche vers le haut
+      Serial.print("↑ [Message]: ");
+      Serial.println(input);
+
+      // Envoi du message via LoRa
+      LoRa.beginPacket();
+      LoRa.print(input);
+      LoRa.endPacket();
+    } else {
+      Serial.println("Message trop long ou vide ! Veuillez envoyer un message de moins de 128 caractères.");
+    }
+  }
+}
+
+
+
+
+</pre>
+      </div>
+  </main>
+  <div class="contacts">
+    <div class="contact-item">
+      <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+    </div>
+    <div class="contact-item">
+      <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+    </div>
+  </div>
+  <footer class="text-center">
+    <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+    </p>
+  </footer>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>

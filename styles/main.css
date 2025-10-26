@@ -1,0 +1,587 @@
+@import url('https://fonts.googleapis.com/css2?family=Aleo:wght@400;700&display=swap');
+
+
+header{
+    border-bottom: solid 1px #747d8c;
+    padding: 1%;
+    margin-bottom:10px;
+}
+
+#foxo{
+
+    bottom:0;
+    right:-8px;
+    background-image: url("../images/foxsvg.svg");
+    width: 600px;
+    height: 600px;
+    background-repeat: no-repeat;
+    position: fixed;
+    z-index: -1;
+}
+
+body{
+
+    padding-left: 200px;
+    background-color: #272f3f;
+    font-family: Aleo, serif;
+    margin: 0;
+    line-height: 1.42857143;
+    color: #fff;
+}
+
+footer{
+    border-top: solid 1px #747d8c;
+    padding: 1%;
+    margin: 0;
+}
+
+.contacts {
+    display: flex;
+}
+
+.contact-item {
+    padding: 1%;
+    margin-top: 1%;
+    display: flex;
+    width: 50%;
+    align-items: center;
+    justify-content: center;
+}
+
+.contact-item2 {
+    padding: 1%;
+    margin-top: 1%;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.contacts i{
+    margin : 5px;
+}
+
+.container{
+    margin:0;
+}
+
+#main-menu {
+    margin: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 200px;
+    background-color: #181d27;
+}
+
+.haut-de-page ul{
+    list-style-type: none;
+}
+
+.haut-de-page ul i{
+    margin-right: 5px;
+}
+
+#main-menu i{
+    margin-right: 10px;
+}
+
+#main-menu .nav-link {
+    color: #929292;
+    text-transform: uppercase;
+    font-size: 0.85em;
+}
+
+#main-menu .nav-link:hover {
+    color: white;
+}
+
+#main-menu .nav-link.active {
+    background-color: #1f2532;
+    color: white;
+}
+
+#logo {
+    height: 46px;
+    margin-left:69px;
+}
+
+.GPGkey{
+    text-align: center;
+}
+
+.GPGkey pre{
+    margin : 0;
+    background-color: #181d27;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: left;
+    display: inline-block;
+}
+
+#logoProfil{
+    height: 95px;
+    border-radius: 50%;
+    margin-left: 43px; /* 42 parce que (184(taille du main menu -2*8(padding)) - 95 (taille projet))/2 */
+    margin-top: 5px;
+}
+
+.logo_t{
+    border-radius: 50%;
+}
+
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 60px;
+    padding-left: 100px;
+    width: 240px;
+    overflow: auto;
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: #181d27;
+    margin: auto;
+    border: 3px solid #888;
+
+}
+
+.tab{
+    padding:0 0 0 20px;
+}
+
+.map{
+    width: 100%;
+    height: 750px;
+}
+.aboutme-item{
+    padding: 1%;
+    margin-top: 1%;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+#rootme{
+    position: absolute;
+    right:30px;
+}
+
+.KnowledgeList{
+    list-style-type: none;
+}
+
+
+.liste-projet {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+
+.carte-projet {
+    background-color: #1A2130;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    width: 300px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s; /* Add a smooth hover effect */
+
+}
+
+.project-card:hover {
+    transform: scale(1.05); /* Slightly enlarge the card on hover */
+}
+
+.carte-project-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.carte-project-detail {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+
+.carte-project-titre {
+    font-size: 1.25em;
+    margin-bottom: 10px;
+    color: #F0F0F0;
+}
+
+.card{background:#1A2130;border:none;border-radius:0.75rem; color:#a9b1b8;}
+
+.card-title{font-size:1.25rem}
+
+.icon-lg{font-size:1.8rem;margin-right:.5rem;color:#0d6efd}
+
+.accordion{
+    --bs-accordion-color: #a9b1b8;
+}
+
+.project-card-desc {
+    font-size: 0.95em;
+    color: #B0B0B0;
+    margin-bottom: 10px;
+}
+
+.project-card-hours {
+    font-size: 0.85em;
+    color: #AAAAAA;
+}
+
+.project-card-link {
+    text-decoration: none; /* Remove underline from the link */
+    color: inherit; /* Inherit text color */
+    display: block; /* Make the link cover the entire card */
+}
+
+
+.progress-container {
+    width: 100%;
+    background-color: #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+
+.progress-bar {
+    height: 10px;
+    transition: width 0.3s ease, background-color 0.3s ease; /* Smooth transition for width and color */
+    border-radius: 5px;
+    width: 0;
+}
+
+
+/* CSS for dynamic color change */
+.progress-bar[data-progress='0'] {
+    width: 0;
+}
+
+.progress-bar[data-progress='10'] {
+    width: 10%;
+    background-color: #FF3300;
+}
+
+.progress-bar[data-progress='20'] {
+    width: 20%;
+    background-color: #FF6600;
+}
+
+.progress-bar[data-progress='30'] {
+    width: 30%;
+    background-color: #FF8000;
+}
+
+.progress-bar[data-progress='40'] {
+    width: 40%;
+    background-color: #FF9933;
+}
+
+.progress-bar[data-progress='50'] {
+    width: 50%;
+    background-color: #FFB200;
+}
+
+.progress-bar[data-progress='60'] {
+    width: 60%;
+    background-color: #FFD700;
+}
+
+.progress-bar[data-progress='70'] {
+    width: 70%;
+    background-color: #B3D944;
+}
+
+.progress-bar[data-progress='80'] {
+    width: 80%;
+    background-color: #66CC33;
+}
+
+.progress-bar[data-progress='90'] {
+    width: 90%;
+    background-color: #339900;
+}
+
+.progress-bar[data-progress='100'] {
+    width: 100%;
+    background-color: #006600;
+}
+
+
+/* ---------- RGB animated progress bar (Minecraft only) ---------- */
+.rgb-progress {
+    /* conserve la largeur imposée par data-progress       */
+    /* (background-color des anciennes règles est écrasé)  */
+    background: linear-gradient(
+            90deg,
+            #ff0000,
+            #ff0000,
+            #ff7f00,
+            #ffff00,
+            #00ff00,
+            #00ffff,
+            #0000ff,
+            #8b00ff,
+            #ff0000,
+            #ff0000
+    );
+    background-size: 600% 100%;
+    animation: rgbShift 3s linear infinite;
+}
+
+@keyframes rgbShift {
+    0%   { background-position: 0% 0%; }
+    100% { background-position: 100% 0%; }
+}
+
+
+
+.mb-5 {
+    margin-bottom: 1.5rem !important; /* Réduit l'espacement à 1.5rem */
+}
+
+.projet img {
+    max-width: 100%;   /* S'assure que les images ne dépassent pas la largeur de leur conteneur */
+    height: auto;      /* Maintient les proportions des images */
+    margin-bottom: 1rem; /* Ajoute une marge inférieure aux images */
+}
+
+.projet section {
+    max-width: 800px; /* Limite la largeur maximale des sections */
+    margin: 0 auto;   /* Centre les sections */
+    padding: 1rem;    /* Ajoute un léger remplissage pour aérer le contenu */
+}
+
+.projet p {
+    font-size: 1rem;   /* Taille de police plus lisible */
+    line-height: 1.6;  /* Améliore l'espacement des lignes pour une meilleure lisibilité */
+}
+
+.image-row {
+    display: flex;
+    justify-content: space-between; /* Espace entre les images */
+    gap: 10px; /* Espacement entre les images */
+    margin-bottom: 1rem; /* Espace sous le conteneur d'images */
+}
+
+.image-row img {
+    flex: 1; /* Permet aux images de se redimensionner pour occuper le même espace */
+    max-width: 48%; /* Limite la largeur maximale des images à 48% du conteneur pour éviter de dépasser */
+    height: auto; /* Maintient le ratio des images */
+}
+
+
+/* === Cartes de documentation flottantes ===================== */
+.doc-list {
+    display: flex;
+    flex-wrap: wrap;          /* Passe à la ligne automatiquement */
+    gap: 20px;                /* Espace entre les cartes */
+    justify-content: center;  /* Centrage horizontal */
+    margin-top: 30px;
+}
+
+.doc-cell {
+    background-color: #1A2130;
+    border: 1px solid #2d3546;
+    border-radius: 8px;
+    width: 250px;             /* Largeur de la cellule */
+    height: 140px;            /* Hauteur fixe pour l’uniformité */
+    padding: 15px;
+    text-decoration: none;    /* Pas de soulignement */
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s ease, background-color 0.25s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.doc-cell i {
+    margin-bottom: 8px;
+}
+
+.doc-cell:hover {
+    transform: translateY(-6px) scale(1.03);
+    background-color: #222b3d;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+}
+
+
+/* === Click-to-copy shell blocks =============================== */
+.shell-block{
+    position:relative;
+    background:#181d27;
+    border:1px solid #2d3546;
+    border-radius:6px;
+    padding:12px;
+    margin-bottom:1rem;
+    cursor:pointer;
+    font-family: "Courier New", monospace;
+    color:#c7c7c7;
+}
+.shell-block:hover{
+    background:#1f2532;
+}
+.shell-block::after{                     /* grey hint in the corner */
+    content:'Click to copy';
+    position:absolute;
+    top:6px; right:10px;
+    font-size:.75em; color:#aaa;
+    transition:opacity .2s;
+}
+.shell-block.copied::after{              /* turns green on success */
+    content:'Copied!';
+    color:#4caf50;
+}
+
+
+/* Media Queries */
+@media (max-width: 992px) {
+    body {
+        padding-left: 0; /* Retire le padding du menu latéral sur les petits écrans */
+    }
+
+    #main-menu {
+        position: relative; /* Rend le menu non fixe */
+        width: 100%; /* Prend toute la largeur de l'écran */
+        height: 30%; /* Ajuste la hauteur automatiquement */
+        padding: 10px; /* Ajoute un peu de padding pour une meilleure apparence */
+    }
+
+    .menu-burger {
+        width: 100%; /* Agrandit le bouton du menu burger */
+        height: 100%; /* Agrandit le bouton du menu burger */
+        font-size: 1.5rem; /* Augmente la taille de l'icône */
+
+    }
+
+
+    .nav-item{
+        padding: 1%; /* Ajoute un peu de padding pour une meilleure apparence */
+        height: 100%; /* Agrandit le bouton du menu burger */
+        font-size: 2rem; /* Augmente la taille de l'icône */
+    }
+
+    header h1 {
+        height: 100%; /* Agrandit le bouton du menu burger */
+        font-size: 4rem; /* Augmente la taille de l'icône */
+        padding: 1%;
+    }
+
+    .haut-de-page p{
+        height: 100%; /* Agrandit le bouton du menu burger */
+        font-size: 3rem; /* Augmente la taille de l'icône */
+        padding: 1%;
+    }
+    .haut-de-page ul{
+        height: 100%; /* Agrandit le bouton du menu burger */
+        font-size: 2rem; /* Augmente la taille de l'icône */
+        padding: 1%;
+    }
+    .GPGkey{
+        height: 100%; /* Agrandit le bouton du menu burger */
+        font-size: 1.6rem; /* Augmente la taille de l'icône */
+        padding: 1%;
+    }
+
+    .contacts {
+        flex-direction: column; /* Change l'affichage en colonne pour les contacts */
+    }
+
+    .contact-item {
+        width: 100%; /* Prend toute la largeur de l'écran */
+        font-size: 2rem; /* Augmente la taille de l'icône */
+        padding: 1%;
+    }
+
+    .contact-item2 {
+        width: 100%; /* Prend toute la largeur de l'écran */
+        font-size: 2rem; /* Augmente la taille de l'icône */
+        padding: 1%;
+    }
+    #logoProfil {
+        display: none; /* Cache la photo de profil sur les petits écrans */
+    }
+
+    .liste-projet {
+        flex-direction: column; /* Les cartes sont empilées verticalement sur les petits écrans */
+        align-items: center; /* Centre les cartes dans leur conteneur */
+    }
+
+    .carte-projet {
+        width: 100%; /* Prend toute la largeur de l'écran pour éviter l'effet de regroupement */
+        max-width: 100%; /* Assure qu'il n'y a pas de largeur max qui interfère */
+        flex: 1 1 auto; /* S'assure que les cartes se comportent correctement en flex */
+        padding: 20px; /* Ajoute du padding pour une meilleure lisibilité */
+        margin-bottom: 20px; /* Espace entre les cartes pour une meilleure visibilité */
+    }
+
+
+    .carte-projet img {
+        height: 50rem; /* Augmente la hauteur de l'image pour une meilleure visibilité */
+    }
+
+
+    .carte-project-titre {
+        font-size: 3em;
+        margin-bottom: 1%;
+        color: #F0F0F0;
+    }
+
+    .project-card-desc {
+        font-size: 2.95em;
+        color: #B0B0B0;
+        margin-bottom:  1%;
+    }
+
+    .project-card-hours {
+        font-size: 2.85em;
+        color: #AAAAAA;
+    }
+
+
+    .progress-bar {
+        height: 20px;
+    }
+
+    .carte-projet .contenu {
+        padding: 20px; /* Augmente le padding pour une meilleure lisibilité */
+    }
+
+    .mb-5 h2{
+        margin-bottom: 1.5rem !important; /* Réduit l'espacement à 1.5rem */
+        font-size: 4rem; /* Augmente la taille de l'icône */
+        padding: 1%;
+    }
+
+    footer {
+        position: relative; /* Change la position du footer pour qu'il soit en bas de la page sur les petits écrans */
+        margin-top: 20px; /* Ajoute de l'espace au-dessus du footer */
+        font-size: 1.5rem; /* Augmente la taille de l'icône */
+        padding: 1%;
+
+
+    }
+
+    .doc-cell {
+        width: 100%;
+        height: 240px;
+    }
+
+
+}

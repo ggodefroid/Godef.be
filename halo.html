@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>godef.be</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    <link href="styles/main.css" rel="stylesheet" type="text/css">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/xd.svg">
+</head>
+<body>
+
+
+
+<div id="main-menu" class="p-2">
+    <img src="images/profil.png" alt="logo" id="logoProfil">
+    <hr>
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+        <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+        <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+    </ul>
+
+</div>
+
+<div class="p-2">
+    <header>
+        <h1>
+            <strong>Halo Helmet</strong>
+        </h1>
+    </header>
+    <div id="foxo"></div>
+    <main>
+        <div class="haut-de-page">
+            <div class="projet">
+                <section class="mb-5">
+                    <h2>Starting Point / Concept and Inspiration</h2>
+                    <p>
+                        I was at Japan Tour 2024 when I came across a custom Halo helmet. I found it so cool that I decided I wanted to make one for myself.
+                        I spoke with the maker of the custom Halo helmet, but he told me he couldn’t take any commissions for another two years. So, I decided to make one myself.
+                    </p>
+                    <img src="images/projet/halo_original.jpg" class="img-fluid rounded mb-3" alt="Illustration 1">
+                </section>
+
+
+                <section class="mb-5">
+                    <h2>Développement and Processus</h2>
+                    <p>
+                        First, I needed to find an STL file of the helmet so I could replicate it.
+                        After finding the file I was looking for and thinking about how to make it, I decided to cut the model into several 3D-printable pieces.
+                    </p>
+                    <img src="images/projet/halo_fusion360.png" class="img-fluid rounded mb-3" alt="Illustration 3">
+                </section>
+
+                <section class="mb-5">
+                    <h2>Mini Version</h2>
+                    <p>
+                        I first printed a 0.5-scale version of the helmet to run some tests and ensure everything would work correctly.
+                        I sanded all the pieces and then glued them together with super glue.
+                        To smooth out the print lines, I first tried using wood filler to cover the more significant imperfections. Then, to hide the finer print marks, I applied spray putty.
+                        Finally, I finished the helmet with a coat of spray paint to give it a polished and uniform appearance.
+
+                    </p>
+                    <div class="image-row">
+                        <img src="images/projet/minihalo.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+                        <img src="images/projet/halocato.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+                    </div>
+                    <div class="image-row">
+                        <img src="images/projet/halo_putty.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+                        <img src="images/projet/halo_putty2.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+                    </div>
+                </section>
+                <section class="mb-5">
+                    <h2>Big Version</h2>
+                    <p>
+                        I learned a lot of techniques from working on the smaller version.
+                        For instance, I discovered that sanding the plastic to remove print lines is mostly ineffective,
+                        as it only works on severely damaged areas or flat layers. After completing all the prints,
+                        I assembled the pieces with super glue, similar to the small version, but to add extra rigidity to the helmet,
+                        I reinforced it with an epoxy glue from the inside.
+                        I also had the idea of adding transparent filament lines to accommodate LEDs later on (though, as you’ll see, this didn’t go as planned).
+                    </p>
+
+                    <div class="image-row">
+                        <img src="images/projet/bigone.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+                        <img src="images/projet/bigbois.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+
+                    </div>
+                    <div class="image-row">
+                        <img src="images/projet/bigponse.avif" class="img-fluid rounded mb-3" alt="Illustration 4">
+                        <img src="images/projet/bigputty.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Problem</h2>
+                    <p>
+                        Now I’m stuck. What happened is that when I spray-painted the helmet,
+                        I didn’t realize that the transition between the black plastic and the transparent plastic from
+                        the print would be so noticeable. Unfortunately, I became fixated on this flaw and felt frustrated with how the helmet turned out.
+                    </p>
+
+                    <img src="images/projet/haloproblem.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">*
+                    <p>
+                        I need to find a way to motivate myself again and figure out how to hide these black lines.
+                        These transparent layers are supposed to remain visible to allow the light from the LEDs inside the helmet to shine through.
+                        So, I can't just paint them a different color since I need the transparent areas to remain clear for the LED light to pass through.
+                        I need to come up with a creative solution that hides the black lines while still allowing the light to shine through as intended.
+                    </p>
+                    <p>sooooo I'm stuck, but it's still cool but unfinished</p>
+                    <p>
+                        I still need to make the helmet look worn by applying silver paint for a weathered effect.
+                        After solving the issue with the black lines, I can add the LEDs to complete the look and make sure the transparent areas allow the light to shine through.
+                        I need to shape the visor properly and ensure it fits perfectly with the helmet design.
+                    </p>
+                </section>
+
+
+            </div>
+
+        </div>
+    </main>
+    <div class="contacts">
+        <div class="contact-item">
+            <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+        </div>
+        <div class="contact-item">
+            <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+        </div>
+    </div>
+    <footer class="text-center">
+        <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+        </p>
+    </footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>
+		

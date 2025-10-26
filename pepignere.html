@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>godef.be</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+  <link href="styles/main.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/xd.svg">
+</head>
+<body>
+
+
+
+<div id="main-menu" class="p-2">
+  <img src="images/profil.png" alt="logo" id="logoProfil">
+  <hr>
+  <ul class="nav nav-pills flex-column">
+    <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+    <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+    <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+    <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+  </ul>
+</div>
+
+<div class="p-2">
+  <header>
+    <h1>
+      <strong>Connected plant nursery</strong>
+    </h1>
+  </header>
+  <div id="foxo"></div>
+  <main>
+    <div class="haut-de-page">
+      <div class="projet">
+        <section class="mb-5">
+          <h2>Wanted Goal</h2>
+          <p>
+            The main goal was to monitor plant pots, detect when the soil moisture was too low,
+            and alert in some way that the plants needed watering. Several challenges had to be addressed.
+            Since it's for a nursery, the data needs to be transmitted over a considerable distance.
+            I also wanted to have current temperature and sunlight data for the plants.
+          </p>
+          <p>
+            To achieve this, I ordered two
+            <a href="https://aliexpress.com/item/1005005264331899.html?spm=a2g0o.order_list.order_list_main.191.6d885e5b9z5C97&gatewayAdapt=glo2fra" target="_blank">
+              ESP32 dev
+            </a>
+            boards for testing, a
+
+            <a href="https://aliexpress.com/item/1005006188012486.html?spm=a2g0o.order_list.order_list_main.34.6d885e5b9z5C97&gatewayAdapt=glo2fra" target="_blank">
+              DS18B20
+            </a>
+            sensor for measuring environmental temperature,
+            <a href="https://aliexpress.com/item/1005006743181490.html?spm=a2g0o.order_list.order_list_main.94.6d885e5b9z5C97&gatewayAdapt=glo2fra" target="_blank">
+              a soil moisture sensor
+            </a>
+            , and a
+            <a href="https://aliexpress.com/item/1005006217138220.html?spm=a2g0o.order_list.order_list_main.179.6d885e5b9z5C97&gatewayAdapt=glo2fra" target="_blank">
+              KY-018
+            </a>
+            sensor for measuring light intensity.
+          </p>
+
+          <p>
+            To transmit data over a long distance, I decided to test a LoRa module, specifically the
+
+            <a href="https://aliexpress.com/item/1005006864170059.html?spm=a2g0o.order_list.order_list_main.201.6d885e5b9z5C97&gatewayAdapt=glo2fra" target="_blank">
+              Ra-01 LoRa SX1278
+            </a>
+            which operates on the 433 MHz frequency.
+          </p>
+        </section>
+        <section class="mb-5">
+          <h2>Note</h2>
+          <p>
+
+
+            Be sure to check whether these frequencies can be used in your country. In my case, it's fine, but you
+            <a href="https://www.ibpt.be/file/cc73d96153bbd5448a56f19d925d05b1379c7f21/90d125f415d53798041bcd2f40fd03699f85efb9/b24-fr.pdf#page=94"target="_blank">
+              should verify
+            </a>
+            on the relevant website or regulatory body of your country, such as
+            <a href="https://www.ibpt.be/operateurs/plan-des-frequences"target="_blank">
+              ibpt
+            </a>
+            for belgium.
+            For us, it's considered a non-specific Short-Range Device (SRD). We won't exceed 10 watts of power,
+            and we will use less than 10% of the overall channel utilization, especially since this is for just one plant.
+          </p>
+          <img src="images/projet/reglementationbe.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+        </section>
+        <section class="mb-5">
+          <h2>How the Network Operates</h2>
+
+          <p>
+          Let’s start by explaining how the network works: A device with an ESP32 and three sensors runs Arduino code.
+          It collects data from the sensors and sends it via LoRa to a LoRa gateway. The gateway acts as a bridge between
+          the LoRa network and the local network, where a Home Assistant is connected. Home Assistant manages an MQTT service,
+          which processes the information and presents it as if it were a native sensor within Home Assistant.
+          </p>
+          <img src="images/projet/schema.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+
+        </section>
+        <section class="mb-5">
+          <h2>Sensor box</h2>
+          <p>
+            The "sensor box" consists of three sensors: a KY-018 for light, a soil moisture sensor, and a DS18B20 for temperature.
+            All sensors are connected to the main component, an ESP32 dev board. Data is transmitted using a LoRa Ra-01 SX1278 module.
+          </p>
+          <p>
+            The electrical schematic :
+            <img src="images/projet/sensorsboxelectroschema.png" class="img-fluid rounded mb-3" alt="Illustration 4">
+            For the DS18B20 sensor, you need to add a 4.7kΩ pull-up resistor between the yellow data wire (DQ) and the 3.3V  positive power.
+          </p>
+          <p>
+            You can access the code
+            <a href="sensorbox.html"target="_blank">
+              [here]
+            </a>
+            if you're interested.
+            This code was for testing purposes and it might be not very clean.
+            Basically, it takes a measurement from each sensor every 10 seconds, calculates the average of 10 readings for each sensor, and then sends the average data of each individual sensor via LoRa
+          </p>
+        </section>
+        </section>
+        <section class="mb-5">
+          <h2>Gateway Lora | local network</h2>
+          <p>
+            The gateway simply connects to Wi-Fi and acts as a bridge between what it receives via LoRa and the local network.
+            It receives the data in a defined format from LoRa, constructs an MQTT request, and then sends it to the server.
+          </p>
+          <p>
+            The electrical schematic :
+            <img src="images/projet/gatewayboxschema.png" class="img-fluid rounded mb-3" alt="Illustration 4">
+
+          </p>
+          <p>
+            You can access the code
+            <a href="gateway.html"target="_blank">
+              [here]
+            </a>
+            if you're interested. Again this code was for testing purposes and it might be not very clean.
+
+          </p>
+        </section>
+        <section class="mb-5">
+          <h2>Security</h2>
+          <p>
+            It works very well, but unfortunately, if someone knew what we were doing with LoRa, they could simply send requests,
+            and my gateway would process that data. This is why the service is currently down at my place. Since then,
+            I have been looking for a way to authenticate my sensors and gateway. LoRa can only send a string of up to
+            128 characters and cannot handle more than that. So, a simple solution would be to hard-code a key into the code.
+            Before sending data, the sensor box would encrypt the message. Then, when the gateway receives any message,
+            it would pass it through a decrypt function. If the first word decoded is "bonjour" for exemple,
+            then the entire decoded message is considered valid for processing.
+          </p>
+          <p>
+            So, if others are listening, they would only see the messages encrypted with AES-128 and wouldn’t be
+            able to send messages that the gateway would accept, as they don’t know the key.
+          </p>
+          <p>
+            However, this is not entirely secure. If someone intercepts a large number of encrypted messages and
+            knows what is being sent, they could potentially reverse-engineer the AES-128 encryption and find the key, compromising
+            all security. An attacker could then send malicious code to the gateway. However, this is still unlikely
+            because they would have to do this within the 128-bit limit imposed by LoRa.
+          </p>
+          <img src="images/projet/sensorbox.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+        </section>
+        <section class="mb-5" id="solution">
+          <h2>Solution — How Zigbee Solves the LoRa Dilemma</h2>
+
+          <p>
+            The very first prototype of this nursery monitor relied on LoRa because the data rate looked perfect on paper: a handful of bytes once in a while and kilometres of range on a coin cell. Reality, however, kicked back hard. The local regulations restrict 433&nbsp;MHz transmissions to <em>tiny</em> output power and a microscopic duty‑cycle. Adding a decent antenna to each flowerpot felt absurd, and indoor attenuation through humid soil, shelves and greenhouse glass cut the range to a few tens of metres anyway. Worse than the physics was the <strong>trust issue</strong>: LoRa in its raw, point‑to‑point form has no native authentication. Any device that could mimic our packet format could inject bogus values and the gateway would obediently relay them to Home&nbsp;Assistant. Encrypting the payload helped a little, but key management quickly became a nightmare and message length ceilings left no room for rolling nonces or signatures.
+          </p>
+
+          <p>
+            After a few weeks of patch‑work, I pressed pause and took a step back. What I actually needed was not ultra‑long reach but <em>reliable coverage inside a metal‑rich, plant‑dense environment</em> that stretches over maybe fifty metres end‑to‑end. The perfect fit was already lurking in the toolbox: <strong>Zigbee 3.0</strong>. It operates in the global 2.4&nbsp;GHz ISM band so there is no paperwork, yet still sips power aggressively enough to let a pair of AA batteries last several growing seasons. Most importantly, Zigbee ships with <em>AES‑128 encryption, integrity protection, a frame counter to defeat replay attacks, key transport secured by install codes, and a fully‑fledged mesh that can reroute traffic around obstacles without a second of downtime</em>.
+          </p>
+
+          <p>
+            Converting the LoRa beacon into a Zigbee <em>end‑device</em> required only a new radio module and a firmware port: the ESP32 microcontroller already had a hardware 802.15.4 block waiting to be used. Each sensor packet is now wrapped automatically by the Zigbee stack; the network layer handles retries, the security layer injects its own message integrity code, and the application layer delivers the values directly into a topic that Home&nbsp;Assistant understands. The result is invisible magic: if a wheelbarrow parks in the middle of the aisle and blocks the line‑of‑sight, the packet simply hops through the nearest mains‑powered plug acting as a router. If a neighbor tries to spoof a frame, the gateway discards it instantly because the counter or the MIC does not match. Meanwhile battery life improved because the radio wakes up for a fraction of the time it did under LoRa’s slow chirps.
+          </p>
+
+          <p>
+            In short, Zigbee replaces a fragile, manually‑secured star topology with a <strong>self‑healing, authenticated mesh</strong>. Every layer of the problem statement is addressed:
+          </p>
+          <ul>
+            <li><strong>Regulatory peace‑of‑mind</strong> — licence‑free worldwide, no duty‑cycle headaches.</li>
+            <li><strong>Dependable range</strong> — routers extend coverage organically as soon as you plug in a smart light or a relay.</li>
+            <li><strong>Security by design</strong> — encryption, integrity and replay protection are mandatory, not optional extras.</li>
+            <li><strong>Battery longevity</strong> — short bursts at 250&nbsp;kbit/s beat long LoRa chirps for the same payload size.</li>
+            <li><strong>Native integrations</strong> — Home&nbsp;Assistant treats each sensor as a first‑class entity, no glue scripts required.</li>
+          </ul>
+
+          <p>
+            The greenhouse is now dotted with unobtrusive beacons that wake up, take a breath of data, and fall back asleep. The gardener’s phone receives a friendly ping only when a pot is thirsty, while the underlying network quietly repairs itself whenever a node goes offline for battery replacement or a metal door slams shut. That resilience, born from Zigbee’s mesh roots, is something LoRa simply could not give without an elaborate gateway fleet far beyond the scope of this hobby experiment.
+          </p>
+        </section>
+        <section class="mb-5" id="to‑be‑continued">
+          <h2>To&nbsp;be&nbsp;continued…</h2>
+
+          </section>
+      </div>
+</div>
+</main>
+<div class="contacts">
+  <div class="contact-item">
+    <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+  </div>
+  <div class="contact-item">
+    <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+  </div>
+</div>
+<footer class="text-center">
+  <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+  </p>
+</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>
+

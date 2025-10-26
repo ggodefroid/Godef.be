@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>godef.be</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+  <link href="styles/main.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/xd.svg">
+</head>
+<body>
+
+
+
+<div id="main-menu" class="p-2">
+  <img src="images/profil.png" alt="logo" id="logoProfil">
+  <hr>
+  <ul class="nav nav-pills flex-column">
+    <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+    <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+    <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+    <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+  </ul>
+
+</div>
+
+<div class="p-2">
+  <header>
+    <h1>
+      <strong>Nas USB</strong>
+    </h1>
+  </header>
+  <div id="foxo"></div>
+  <main>
+    <div class="projet">
+
+      <div class="haut-de-page">
+        <section class="mb-5">
+          <h2>Wanted Goal</h2>
+          <p>
+            I’ve always wanted a NAS that can run multiple drives in RAID 5 to ensure data redundancy while
+            being energy-efficient and consuming the least amount of power possible.
+            While browsing the internet for the best processor with a satisfactory number of cores,
+            I specifically looked for one that is energy-efficient and consumes minimal power.
+            I came across the
+            <a href="https://ark.intel.com/content/www/us/en/ark/products/231803/intel-processor-n100-6m-cache-up-to-3-40-ghz.html">
+               Intel N100
+            </a>
+            processor, which features 4 threads, a turbo boost up to 3.4 GHz, 6 MB of cache, and a low TDP of just 6 watts.
+            Many companies produce mini PCs with these processors, and they are quite affordable,
+            <a href="https://www.dealabs.com/search?q=n100" target="_blank">
+              starting at around €100.
+            </a>
+
+          </p>
+          <p>
+            After acquiring one, I looked into the technologies and methods for connecting at least four drives to my mini PC.
+            At first glance, there don’t seem to be many options for connecting multiple drives to the mini PC.
+          </p>
+
+          <img src="images/projet/n100interior.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+
+          <p>
+            That's when I had the idea to use the USB 3.0 ports. Given the theoretical speed of 5 Gbps,
+            it’s clear that my RAID 5 setup with 5400 RPM HDDs will never exceed this speed. So, I figured it was worth a try.
+            While considering this setup, I encountered a problem: the PC’s 15W power supply
+            isn’t capable of handling the load of four 2.5" drives. Each 2.5" HDD can consume up to 3W, which might seem minor,
+            but it adds up. The PC’s power supply would be insufficient to support both the PC and the four HDDs simultaneously.
+          </p>
+          <p>
+            Sooo time for
+
+            <a href="https://www.amazon.de/Schnelle-Daten%C3%BCbertragung-Netzadapter-Aluminiumgeh%C3%A4use-Kompatibilit%C3%A4t/dp/B0BQ6Q25C4" target="_blank">
+              USB 3.0 powered HUB</a>
+            yayyy and 4 cheap
+            <a href="https://aliexpress.com/item/1005005252177696.html" target="_blank">
+              USB 3.0 to sata</a>
+            (That can only handle the load of one 2.5" HDDs each.).
+
+
+          </p>
+          <p>
+            I also wanted to add
+            <a href="https://aliexpress.com/item/1005005197418171.html?" target="_blank">
+              LEDs</a>
+            underneath the case to create animations with a
+            <a href="https://aliexpress.com/item/1005001962351766.html" target="_blank">
+              D1 mini</a>
+            running
+            <a href="https://kno.wled.ge/" target="_blank">
+              Wled
+            </a>
+            . This would allow changing the animation when a backup is in progress or dimming the lights at certain times, like light night, to avoid disturbing sleep.
+          </p>
+
+
+          <img src="images/projet/wled.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+        </section>
+
+        <section class="mb-5">
+          <h2>Modelisation</h2>
+          <p>
+            I then started working on the NAS enclosure on fusion360.
+            I like the idea of having drive bays to make it easy to swap out disks.
+            The design includes ventilation holes, a space to mount the USB hub, and compartments for managing the drive cables and LEDs.
+            I found
+            <a href="https://makerworld.com/en/models/64308?from=search#profileId-67385" target="_blank">
+              this model</a>
+            that I found interesting, so I kept the rack bay and modified it to accommodate four drives.
+            <img src="images/projet/nasfusion.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+          </p>
+        </section>
+
+        <section class="mb-5">
+          <h2>Printing</h2>
+          <p>
+            I then 3D-printed the case parts in the most suitable orientation, including the four drive mounts and the cover.
+            I also corrected a few dimensional issues during the process.
+
+          </p>
+            <img src="images/projet/correctionnas.gif" class="img-fluid rounded mb-3" alt="Illustration 4">
+        </section>
+        <section class="mb-5">
+          <h2>Assembly</h2>
+          <p>
+            I then put everything together, connecting the four drives with their adapters to the powered USB hub.
+            I also modified the USB hub to extract 12V from its PCB to power a DC-DC converter that steps down to 5V, which powers the D1 Mini controlling the LEDs
+          </p>
+        </section>
+
+        <section class="mb-5">
+          <h2>Problems began</h2>
+          <p>
+            <a href="https://www.truenas.com/community/threads/usb-drives-not-visible.103644/" target="_blank">
+              Apparently</a>,
+            TrueNAS handles USB-connected drives poorly, it has trouble retrieving the serial numbers,
+            and it doesn't recognize the disks. So, I switched to OpenMediaVault, which works fine with USB drives.
+            After installing OpenMediaVault on the mini PC, I discovered that everyone says it’s a terrible idea to build a NAS with USB-connected drives. Who could have seen that coming...
+          </p>
+          <p>
+            Even
+            <a href="https://forum.openmediavault.org/index.php?thread/52399-raid-and-usb/" target="_blank">
+              OpenMediaVault
+            </a>
+            doesn’t support this setup, and it’s officially intentional.
+            Despite this, I decided to move forward anyway. I set up the RAID array with mdadm and ran a speed test.
+          </p>
+        </section>
+
+        <section class="mb-5">
+          <h2>Good news</h2>
+          <p>
+            I noticed that the drives were very hot, around 60°C, and they were all vibrating, almost as if they were resonating together.
+            So, I took them out of the enclosure, cooled them down with a fan, which brought their temperature down by 25°C, and then ran the speed test again.
+            They no longer vibrated in resonance and were no longer hot to the touch.
+            And I was really surprised by the results.
+          </p>
+          <img src="images/projet/perfnas.jpg" class="img-fluid rounded mb-3" alt="Illustration 4">
+          <p>
+            Unfortunately, even when I only put two drives back together, they became very hot again due to inadequate airflow, and their vibrations caused the performance to drop significantly.
+          </p>
+        </section>
+
+        <section class="mb-5">
+          <h2>Solution</h2>
+          <p>
+            I thought that the natural upward flow of warm air would be enough to cool the drives, but I’ll need to install a small 40mm fan like a
+            <a href="https://aliexpress.com/item/1005006306536871.html" target="_blank">
+              dc4010
+            </a>
+            in the back to ensure proper cooling.
+            I’ll connect it directly to 12V at the same point where I tapped to power the DC/DC converter
+          </p>
+          <p>
+            For the vibrations, I’m still unsure. I thought for a simple rubber dampeners but
+            finaly i printed the hdd support in TPU
+          </p>
+
+        </section>
+
+        <section class="mb-5">
+          <h2>Closed project</h2>
+          <p>
+            So there it is, my JBOD over USB.
+            After a bunch of tests of read and write with the array, i finally decided to use it to store backups data.
+            I do not advice anyone to reproduce this project to store important data. This is a Interresting project
+            where I learn a bunch a things.
+          </p>
+          <p>
+            Today, I use my array daily to make backups of my laptop and to have a little cloud for my phone which automatically stores my photos
+            and videos thanks to the Photosync application on my phone and the photoprims service which run over docker in the same machine of openmediavault.
+          </p>
+          <p>
+            The LED functionality is powered by a D1 Mini running WLED, providing dynamic and customizable lighting effects.
+            A custom script managed by systemctl runs on the mini pc, monitoring the health of the RAID array every 10 seconds.
+            If all the disks remain in the array, the LEDs operate in two distinct modes:
+            a daytime mode with a pleasant and lively effect for visibility, and a nighttime mode with soft and calming effects to minimize disturbance.
+            However, if any disk fails or drops from the array, the LEDs immediately switch to an alert mode, signaling the issue visually.
+            This setup ensures both functionality and aesthetics while maintaining a responsive alert system. You can find the python code
+            <a href="WledNasCode.html" target="_blank">
+              here
+            </a>
+            <img src="images/projet/error_nas.gif" class="img-fluid rounded mb-3" alt="Illustration 4" width="800" height="auto">
+
+          </p>
+
+          <p>
+            For more information Find the project on :
+            <a href="https://makerworld.com/en/models/715664#profileId-646368" target="_blank">
+              Maker world
+            </a>
+          </p>
+        </section>
+
+      </div>
+
+    </div>
+</div>
+</main>
+<div class="contacts">
+  <div class="contact-item">
+    <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+  </div>
+  <div class="contact-item">
+    <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+  </div>
+</div>
+<footer class="text-center">
+  <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+  </p>
+</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>
+		

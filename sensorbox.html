@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>godef.be</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    <link href="../styles/main.css" rel="stylesheet" type="text/css">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/foxsvg.svg">
+</head>
+<body>
+
+<div id="main-menu" class="p-2">
+    <img src="../images/profil.png" id="logoProfil">
+    <hr>
+
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+        <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+        <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+    </ul>
+</div>
+
+<main class="p-2">
+    <header>
+        <h1>
+            <strong>Sensors box arduino code</strong>
+        </h1>
+    </header>
+    <div id="foxo"></div>
+    <main>
+        <div class="haut-de-page">
+
+            <div class="GPGkey">
+                <pre>#include &lt;SPI.h&gt;
+#include &lt;LoRa.h&gt;
+#include &lt;DS18B20.h&gt;
+
+
+//MQTT
+const char* topic = "homeassistant/sensor/lumi_serre2/config";
+const char* device_class = "ILLUMINANCE";
+const char* name = "";
+const char* unique_id = "";
+const char* device_name = "Boitier1";
+const char* device_identifiers = "boitier_1";
+const char* state_topic = "";
+const char* unit_of_measurement = "lx";
+
+String configPayload = String(topic) + "|" +
+                       String(device_class) + "|" +
+                       String(name) + "|" +
+                       String(unique_id) + "|" +
+                       String(device_name) + "|" +
+                       String(device_identifiers) + "|" +
+                       String(state_topic) + "|" +
+                       String(unit_of_measurement);
+
+const char* topic2 = "homeassistant/sensor/humi_serre2/config";
+const char* device_class2 = "HUMIDITY";
+const char* name2 = "";
+const char* unique_id2 = "";
+const char* state_topic2 = "";
+const char* unit_of_measurement2 = "%";
+
+String configPayload2 = String(topic2) + "|" +
+                       String(device_class2) + "|" +
+                       String(name2) + "|" +
+                       String(unique_id2) + "|" +
+                       String(device_name) + "|" +
+                       String(device_identifiers) + "|" +
+                       String(state_topic2) + "|" +
+                       String(unit_of_measurement2);
+
+
+const char* topic3 = "homeassistant/sensor/temp_serre2/config";
+const char* device_class3 = "TEMPERATURE";
+const char* name3 = "";
+const char* unique_id3 = "";
+const char* state_topic3 = "";
+const char* unit_of_measurement3 = "°C";
+
+String configPayload3 = String(topic3) + "|" +
+                       String(device_class3) + "|" +
+                       String(name3) + "|" +
+                       String(unique_id3) + "|" +
+                       String(device_name) + "|" +
+                       String(device_identifiers) + "|" +
+                       String(state_topic3) + "|" +
+                       String(unit_of_measurement3);
+
+
+//define the pins used by the lora module
+#define ss 5
+#define rst 14
+#define dio0 2
+
+//set counter
+int totallumi = 0;
+int totalhumi = 0;
+int totaltemp = 0;
+int counter = 0;
+int valuelumi = 0;
+int valuehumi = 0;
+int valuetemp = 0;
+int numReadings = 10;
+
+//define the pins for sensors
+int sensorPin = 26;
+int sensorPin2 = 36;
+DS18B20 ds(22);
+
+//set pin address for DS18B20
+uint8_t address_temp[] = {237, 0, 0, 0, 135, 237, 99, 40};
+
+
+
+
+void setup() {
+  Serial.begin(115200);
+  while (!Serial);
+  Serial.println("LoRa Receiver");
+
+  //setup LoRa transceiver module
+  LoRa.setPins(ss, rst, dio0);
+
+  //replace the LoRa.begin(---E-) argument with your location's frequency
+  //433E6 for Asia, 868E6 for Europe, 915E6 for North America
+  while (!LoRa.begin(433E6)) {
+    Serial.println(".");
+    delay(500);
+  }
+  // Change sync word (0xF3) to match the receiver
+  // The sync word assures you don't get LoRa messages from other LoRa transceivers
+  // ranges from 0-0xFF
+  LoRa.setSyncWord(0x5E);
+  Serial.println("LoRa Initializing OK!");
+  analogReadResolution(12);
+  analogSetPinAttenuation(sensorPin, ADC_11db);
+  analogSetPinAttenuation(sensorPin2, ADC_11db);
+
+  // Capteur de température initialisation
+  ds.select(address_temp);
+}
+
+void loop() {
+  LoRa.beginPacket();
+  LoRa.print(String(configPayload));
+  LoRa.endPacket();
+  Serial.print("[↑] ");
+  Serial.println(configPayload);
+  delay(1000);
+
+  LoRa.beginPacket();
+  LoRa.print(String(configPayload2));
+  LoRa.endPacket();
+  Serial.print("[↑] ");
+  Serial.println(configPayload2);
+  delay(1000);
+
+  LoRa.beginPacket();
+  LoRa.print(String(configPayload3));
+  LoRa.endPacket();
+  Serial.print("[↑] ");
+  Serial.println(configPayload3);
+
+  for (int i = 0; i < 1800; i++) {
+    String topiclumi = String(state_topic) + "|";
+    String topichumi = String(state_topic2) + "|";
+    String topictemp = String(state_topic3) + "|";
+
+    for (int i = 0; i < 10; i++) {
+      totallumi = 0; // réinitialiser le total
+      totalhumi = 0; // réinitialiser le total
+      totaltemp= 0;
+      for (int i = 0; i < numReadings; i++) {
+        valuelumi = analogRead(sensorPin);
+        valuehumi = analogRead(sensorPin2);
+        valuetemp = ds.getTempC();
+
+        totallumi += valuelumi;
+        totalhumi += valuehumi;
+        totaltemp += valuetemp;
+        Serial.print("Capteur luminosite : ");
+        Serial.println(valuelumi);
+        Serial.print("Capteur Humidite : ");
+        Serial.println(valuehumi);
+        Serial.print("Capteur Température : ");
+        Serial.println(valuetemp);
+        delay(1000);
+      }
+
+      int averageValue = totallumi / numReadings;
+      int calibration_Luninosite = map(averageValue, 4095, 0, 0, 2000);
+      calibration_Luninosite = constrain(calibration_Luninosite, 0, 2000);
+
+      String message = topiclumi + String(calibration_Luninosite);
+
+      LoRa.beginPacket();
+      LoRa.print(message);
+      LoRa.endPacket();
+      Serial.print("[↑] ");
+      Serial.println(message);
+
+
+
+      int averageValue2 = totalhumi / numReadings;
+      int calibration_Humidite = map(averageValue2, 2460, 930, 0, 100);
+      calibration_Humidite = constrain(calibration_Humidite, 0, 100);
+
+      message = topichumi + String(calibration_Humidite);
+
+      delay(1000);
+
+      LoRa.beginPacket();
+      LoRa.print(message);
+      LoRa.endPacket();
+      Serial.print("[↑] ");
+      Serial.println(message);
+
+
+      int averageValue3 = totaltemp / numReadings;
+      message = topictemp + String(averageValue3);
+
+      delay(1000);
+
+      LoRa.beginPacket();
+      LoRa.print(message);
+      LoRa.endPacket();
+      Serial.print("[↑] ");
+      Serial.println(message);
+    }
+  }
+}
+</pre>
+            </div>
+    </main>
+    <div class="contacts">
+        <div class="contact-item">
+            <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+        </div>
+        <div class="contact-item">
+            <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+        </div>
+    </div>
+    <footer class="text-center">
+        <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+        </p>
+    </footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>godef.be</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    <link href="../styles/main.css" rel="stylesheet" type="text/css">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/foxsvg.svg">
+</head>
+<body>
+
+<div id="main-menu" class="p-2">
+    <img src="../images/profil.png" id="logoProfil">
+    <hr>
+
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+        <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+        <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+    </ul>
+
+</div>
+
+<main class="p-2">
+    <header>
+        <h1>
+            <strong>Gateway Lora | local network</strong>
+        </h1>
+    </header>
+    <div id="foxo"></div>
+    <main>
+        <div class="haut-de-page">
+
+            <div class="GPGkey">
+                <pre>
+#include &lt;LoRa.h&gt;
+#include &lt;WiFi.h&gt;
+#include &lt;PubSubClient.h&gt;
+
+// define the pins used by the transceiver module
+#define ss 5
+#define rst 14
+#define dio0 2
+
+// WiFi credentials
+const char* ssid = "WIFI-SSID";
+const char* password = "WIFI-PASSWORD";
+const char* mqtt_server = "IP OH THE MQTT SERVER";
+
+// MQTT credentials
+const char* Mqtt_User = "MQTT USER";
+const char* Mqtt_Password = "MQTT PASSWORD";
+
+
+
+WiFiClient espClient;
+PubSubClient client(espClient);
+
+void setup_wifi() {
+  delay(10);
+  Serial.println();
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void callback(char* topic, byte* payload, unsigned int length) {
+}
+
+void reconnect() {
+  while (!client.connected()) {
+    Serial.print("Attempting MQTT connection...");
+    String clientId = "ESP32Client-";
+    clientId += String(random(0xffff), HEX);
+
+    if (client.connect(clientId.c_str(), Mqtt_User, Mqtt_Password)) {
+      Serial.println("connected");
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" try again in 5 seconds");
+      delay(5000);
+    }
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  setup_wifi();
+  client.setServer(mqtt_server, 1883);
+  client.setCallback(callback);
+  client.setBufferSize(512);
+  Serial.println("LoRa Receiver");
+  LoRa.setPins(ss, rst, dio0);
+  while (!LoRa.begin(433E6)) {
+    Serial.println(".");;
+    delay(500);
+  }
+  LoRa.setSyncWord(0x5E);
+  Serial.println("LoRa Initializing OK!");
+}
+
+void loop() {
+  if (!client.connected()) {
+    reconnect();
+    }
+  client.loop();
+  int packetSize = LoRa.parsePacket();
+  if (packetSize) {
+    String LoRaData;
+    while (LoRa.available()) {
+      LoRaData += (char)LoRa.read();
+      }
+    Serial.println(LoRaData);
+
+
+
+    int delimiterIndex = LoRaData.indexOf("|");
+    if (delimiterIndex != -1) {
+      String Topic = LoRaData.substring(0, delimiterIndex);
+      String data = LoRaData.substring(delimiterIndex + 1);
+      if (Topic.indexOf("/config") != -1) {
+        delimiterIndex = data.indexOf("|");
+        String device_class = data.substring(0, delimiterIndex);
+        data = data.substring(delimiterIndex+ 1);
+        delimiterIndex = data.indexOf("|");
+        String name = data.substring(0, delimiterIndex);
+        data = data.substring(delimiterIndex+ 1);
+        delimiterIndex = data.indexOf("|");
+        String unique_id = data.substring(0, delimiterIndex);
+        data = data.substring(delimiterIndex+ 1);
+        delimiterIndex = data.indexOf("|");
+        String device_name = data.substring(0, delimiterIndex);
+        data = data.substring(delimiterIndex+ 1);
+        delimiterIndex = data.indexOf("|");
+        String device_identifiers = data.substring(0, delimiterIndex);
+        data = data.substring(delimiterIndex+ 1);
+        delimiterIndex = data.indexOf("|");
+        String state_topic = data.substring(0, delimiterIndex);
+        data = data.substring(delimiterIndex+ 1);
+        delimiterIndex = data.indexOf("|");
+        String unit_of_measurement = data.substring(0, delimiterIndex);
+        String data = "{\"device_class\":\"" + device_class +
+                      "\",\"name\":\"" + name +
+                      "\",\"unique_id\":\"" + unique_id +
+                      "\",\"device\":{\"name\":\"" + device_name +
+                      "\",\"identifiers\":\"" + device_identifiers +
+                      "\"},\"state_topic\":\"" + state_topic +
+                      "\",\"unit_of_measurement\":\"" + unit_of_measurement +
+                      "\",\"value_template\":\"{{ value }}\",\"platform\":\"mqtt\"}";
+        Serial.println(data);
+        client.publish(Topic.c_str(), data.c_str());
+
+      }else{
+        Serial.print("First part: ");
+        Serial.println(Topic);
+        Serial.print("Second part: ");
+        Serial.println(data);
+        client.publish(Topic.c_str(), data.c_str());
+      }
+    }
+  }
+}
+</pre>
+            </div>
+
+</main>
+<div class="contacts">
+    <div class="contact-item">
+        <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+    </div>
+    <div class="contact-item">
+        <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+    </div>
+</div>
+<footer class="text-center">
+    <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+    </p>
+</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>

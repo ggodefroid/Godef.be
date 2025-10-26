@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Bind 9 DNS on a LXC (Proxmox) — godef.be</title>
+
+    <!-- Framework & icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css"   rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css"       rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css"        rel="stylesheet">
+
+    <!-- Global stylesheet -->
+    <link href="styles/main.css" rel="stylesheet" type="text/css">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/xd.svg">
+
+    <!-- Shell-block CSS -->
+    <style>
+        .shell-block{position:relative;background:#181d27;border:1px solid #2d3546;border-radius:6px;padding:12px;margin-bottom:1rem;cursor:pointer;font-family:"Courier New",monospace;color:#c7c7c7;overflow:auto}
+        .shell-block:hover{background:#1f2532}
+        .shell-block::after{content:"Click to copy";position:absolute;top:6px;right:10px;font-size:.75em;color:#aaa;transition:opacity .2s}
+        .shell-block.copied::after{content:"Copied!";color:#4caf50}
+    </style>
+</head>
+<body>
+
+<!-- ===== Left navigation bar ===== -->
+<div id="main-menu" class="p-2">
+    <img src="images/profil.png" alt="logo" id="logoProfil">
+    <hr>
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+        <li class="nav-item"><a class="nav-link" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+        <li class="nav-item"><a class="nav-link active" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+    </ul>
+</div>
+
+<!-- ===== Page content ===== -->
+<div class="p-2">
+    <header>
+        <h1><strong>Bind9 DNS on a LXC (Proxmox)</strong></h1>
+    </header>
+    <div id="foxo"></div>
+
+    <main>
+        <div class="haut-de-page">
+            <div class="projet">
+
+                <!-- ---------- WHY THIS GUIDE ---------- -->
+                <section class="mb-5">
+                    <h2>Why run Bind9 inside an LXC?</h2>
+                    <p>
+                        Putting Bind inside an unprivileged Linux container keeps the Proxmox host surface small while letting us
+                        roll snapshots, firewall the service separately and move the DNS stack to another node in seconds.
+                        Arch&nbsp;Linux was picked for its tiny base image and bleeding‑edge packages — ideal when you actually
+                        <em>want</em> the latest CVE fixes. If you prefer a long‑term‑support distro (Debian, Alma …), the steps are
+                        95&nbsp;% identical: just swap <code>pacman</code> for <code>apt</code>/<code>dnf</code> and enjoy.
+                    </p>
+                </section>
+
+                <!-- ---------- 1. LXC container setup ---------- -->
+                <section class="mb-5">
+                    <h2>1&nbsp;·&nbsp;Create the container (Proxmox host)</h2>
+                    <p>Download an official Arch template:</p>
+                    <div class="shell-block"><pre><code>pveam update
+pveam available | grep archlinux
+pveam download local archlinux-20240301_amd64.tar.zst</code></pre></div>
+
+                    <p>Spin up an <strong>unprivileged</strong> container (ID 130, 512 MiB RAM, static IP 10.0.0.3):</p>
+                    <div class="shell-block"><pre><code>pct create 130 local:vztmpl/archlinux-20240301_amd64.tar.zst \
+     --hostname dns01 \
+     --unprivileged 1 \
+     --net0 name=eth0,bridge=vmbr0,ip=10.0.0.3/24,gw=10.0.0.1 \
+     --memory 512 --swap 512 --rootfs local-lvm:5
+pct start 130
+pct console 130</code></pre></div>
+
+                    <p class="fst-italic">
+                        Need <code>systemd-nspawn</code> or FUSE later? Enable nesting capabilities:
+                    </p>
+                    <div class="shell-block"><pre><code>pct set 130 -features nesting=1</code></pre></div>
+                </section>
+
+                <!-- ---------- 2. Install Bind ---------- -->
+                <section class="mb-5">
+                    <h2>2 · Install Bind9 &amp; helper tools</h2>
+
+                    <p><strong>Refresh keys, fully upgrade Arch</strong></p>
+                    <div class="shell-block"><pre><code>pacman -Sy archlinux-keyring --noconfirm
+pacman -Syu --noconfirm</code></pre></div>
+
+                    <p><strong>Install Bind and dig / nsupdate helpers</strong></p>
+                    <div class="shell-block"><pre><code>pacman -S --noconfirm bind bind-tools</code></pre></div>
+
+                    <p><strong>Free port 53</strong>&nbsp;– disable the default stub resolver:</p>
+                    <div class="shell-block"><pre><code>systemctl disable --now systemd-resolved.service</code></pre></div>
+
+                    <p><strong>Enable &amp; start <code>named</code></strong></p>
+                    <div class="shell-block"><pre><code>systemctl enable --now named.service</code></pre></div>
+
+                    <div class="alert alert-warning mt-4" role="alert">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <strong>Kernel upgrades ahead!</strong> A full <code>pacman -Syu</code> swaps the kernel while removing the old
+                        modules. Either reboot right after, or install the hook below so modules persist until next boot.
+                        <div class="shell-block mt-2"><pre><code>pacman -Sy kernel-modules-hook</code></pre></div>
+                    </div>
+                </section>
+
+                <!-- ---------- 2½. Secure with firewalld ---------- -->
+                <section class="mb-5">
+                    <h2>Quick firewall (optional but recommended)</h2>
+                    <p>
+                        Arch’s <code>iptables</code> preset is blank. If your LXC is bridged straight to the LAN it will happily answer
+                        the whole internet. The one‑liner below allows only TCP/UDP&nbsp;53 plus SSH from the LAN range:
+                    </p>
+                    <div class="shell-block"><pre><code>pacman -S --noconfirm nftables
+cat > /etc/nftables.conf &lt;&lt;'EOF'
+flush ruleset
+
+table inet filter {
+  chain input {
+    type filter hook input priority 0;
+    ct state established,related accept
+    iif "lo" accept
+    ip saddr 10.0.0.0/24 udp dport 53 accept   # DNS UDP
+    ip saddr 10.0.0.0/24 tcp dport 53 accept   # DNS TCP
+    counter drop
+  }
+}
+EOF
+systemctl enable --now nftables</code></pre></div>
+                </section>
+
+                <!-- ---------- 3. Directory layout ---------- -->
+                <section class="mb-5">
+                    <h2>3 · Directory layout &amp; defaults on Arch</h2>
+                    <div class="shell-block"><pre><code>/etc/named.conf       # main configuration, world‑readable
+/etc/named/           # custom include files (our views)
+/var/named/           # zone files, owned by named:named (chroot‑safe)
+/run/named/           # PID &amp; runtime artefacts
+/var/log/named.log    # we create this in logging section</code></pre></div>
+                    <p class="mb-0">
+                        The Arch package <em>does not</em> chroot Bind. That makes debugging easier. If you want a real chroot use
+                        <code>named -t</code> or <a href="https://wiki.archlinux.org/title/Chroot" target="_blank">systemd‑nspawn</a>.
+                    </p>
+                </section>
+
+                <!-- ---------- 4. Minimal named.conf ---------- -->
+                <section class="mb-5">
+                    <h2>4 · Configuration: minimal <code>named.conf</code> (split‑horizon)</h2>
+                    <p>
+                        Below is a hardened template: recursion disabled by default, query logging on its own file and two views
+                        (“lan”/“wan”) for split‑horizon. Adapt CIDRs and domain.
+                    </p>
+                    <div class="shell-block"><pre><code>options {
+    directory "/var/named";
+    pid-file  "/run/named/named.pid";
+
+    listen-on { any; };
+    listen-on-v6 { any; };
+
+    recursion no;                 # safety first
+    allow-recursion { 10.0.0.0/24; };
+    allow-transfer  { none; };
+    allow-update    { none; };
+
+    dnssec-validation auto;
+
+    version   "not disclosed";
+    hostname  "dns01";
+    server-id none;
+};
+
+logging {
+    channel querylog {
+        file "/var/log/named.log" versions 3 size 5m;
+        severity info;
+        print-category yes;
+        print-time yes;
+        print-severity yes;
+    };
+    category queries { querylog; };
+};
+
+view "lan" {
+    match-clients { 10.0.0.0/24; localhost; };
+    include "/etc/named/lan-zones.conf";
+};
+
+view "wan" {
+    match-clients { any; };
+    recursion no;              # public must not recurse
+    include "/etc/named/wan-zones.conf";
+};</code></pre></div>
+                    <div class="alert alert-info" role="alert">
+                        <i class="fa-solid fa-eye"></i>
+                        <strong>Tip — How views work</strong><br>
+                        Bind walks the views <em>top to bottom</em>. The first <code>match-clients</code> that succeeds decides which
+                        zones are visible and whether recursion is allowed. Put the most restrictive view first.
+                    </div>
+                </section>
+
+                <!-- ---------- 5. Zone files ---------- -->
+                <section class="mb-5">
+                    <h2>5 · Create zone files</h2>
+                    <p>
+                        Add a per‑view include so you can host many domains without editing the root config each time:
+                    </p>
+                    <div class="shell-block"><pre><code># /etc/named/lan-zones.conf
+zone "example.com" IN { type master; file "lan/example.com.zone"; };
+
+# /etc/named/wan-zones.conf
+zone "example.com" IN { type master; file "wan/example.com.zone"; };</code></pre></div>
+
+                    <p>LAN (private) zone <code>/var/named/lan/example.com.zone</code></p>
+                    <div class="shell-block"><pre><code>$TTL 2h
+@   IN SOA ns1.example.com. hostmaster.example.com. (
+            2025051701 ; Serial (YYYYMMDDnn)
+            8h         ; Refresh
+            30m        ; Retry
+            1w         ; Expire
+            1h )       ; Negative Cache TTL
+    IN NS  ns1.example.com.
+ns1 IN A   10.0.0.3
+@   IN A   10.0.0.20
+www IN A   10.0.0.20</code></pre></div>
+
+                    <p>WAN (public) zone <code>/var/named/wan/example.com.zone</code></p>
+                    <div class="shell-block"><pre><code>$TTL 2h
+@   IN SOA ns1.example.com. hostmaster.example.com. (
+            2025051701 ; Serial (YYYYMMDDnn)
+            8h         ; Refresh
+            30m        ; Retry
+            1w         ; Expire
+            1h )       ; Negative Cache TTL
+    IN NS  ns1.example.com.
+ns1 IN A   203.0.113.15
+@   IN A   203.0.113.15
+www IN A   203.0.113.15</code></pre></div>
+
+                    <div class="alert alert-secondary" role="alert">
+                        <i class="fa-solid fa-arrow-rotate-right"></i>
+                        <strong>SOA serial matters!</strong> Always bump the number before <kbd>rndc reload</kbd> — most admins use
+                        <code>YYYYMMDDnn</code>. Bind ignores a zone whose serial did not change.
+                    </div>
+
+                    <p><strong>Validate syntax &amp; zone integrity</strong></p>
+                    <div class="shell-block"><pre><code>named-checkconf
+named-checkzone example.com /var/named/lan/example.com.zone
+named-checkzone example.com /var/named/wan/example.com.zone</code></pre></div>
+
+                    <p><strong>Reload without downtime</strong></p>
+                    <div class="shell-block"><pre><code>rndc reload</code></pre></div>
+                </section>
+
+
+                <!-- ---------- 6. Smoke test ---------- -->
+                <section class="mb-5">
+                    <h2>6 · Smoke test</h2>
+                    <p>From a LAN client:</p>
+                    <div class="shell-block"><pre><code>dig @10.0.0.3 www.example.com +short   # → 10.0.0.20</code></pre></div>
+
+                    <p>From an external VPS:</p>
+                    <div class="shell-block"><pre><code>dig @203.0.113.15 www.example.com +short   # → 203.0.113.15</code></pre></div>
+
+                    <p><strong>Verify AXFR is blocked</strong></p>
+                    <div class="shell-block"><pre><code>dig -t AXFR example.com @203.0.113.15    # → Transfer failed.</code></pre></div>
+
+                    <p><strong>Confirm recursion disabled for WAN / LAN</strong></p>
+                    <div class="shell-block"><pre><code>dig @203.0.113.15 google.com +short   # no answer section
+dig @10.0.0.3 google.com +short   # no answer section</code></pre></div>
+                </section>
+
+                <!-- ---------- 7. Proxmox extras ---------- -->
+                <section class="mb-5">
+                    <h2>7 · Proxmox LXC caveats</h2>
+                    <ul>
+                        <li>Map container DNS port to host only if you use NAT; bridged mode exposes it automatically.</li>
+                        <li>Enable IPv6: <code>pct set 130 -net0 ...,ip6=2a02:ffff::3/64</code> and add a AAAA record.</li>
+                        <li>Take a snapshot after every zone addition: <code>pct snapshot 130 "after-example.com"</code>.</li>
+                        <li>Backups: <code>vzdump 130 --mode snapshot --compress zstd</code> includes /etc &amp; /var/named by default.</li>
+                    </ul>
+                </section>
+
+                <!-- ---------- 8. Maintenance ---------- -->
+                <section class="mb-5">
+                    <h2>8 · Maintenance cheat‑sheet</h2>
+
+                    <p><strong>Add a record, bump serial, reload</strong></p>
+                    <div class="shell-block"><pre><code>vim /var/named/lan/example.com.zone    # edit + bump serial
+rndc reload example.com</code></pre></div>
+
+                    <p><strong>Flush full cache</strong></p>
+                    <div class="shell-block"><pre><code>rndc flush</code></pre></div>
+
+                    <p><strong>Dump statistics</strong></p>
+                    <div class="shell-block"><pre><code>rndc stats && tail /var/named/named.stats</code></pre></div>
+                </section>
+
+                <!-- ---------- 10. Troubleshooting ---------- -->
+                <section class="mb-5">
+                    <h2>9 · Troubleshooting quickies</h2>
+                    <ul>
+                        <li><strong>Crash on start</strong> → check <code>journalctl -u named.service</code> and <code>named-checkconf</code>.</li>
+                        <li><strong>Zone loads but queries fail</strong> → verify firewall and <code>listen-on</code> directives.</li>
+                        <li><strong>Random SERVFAIL</strong> → ensure the container clock syncs (<code>timedatectl</code>).</li>
+                        <li><strong>Slow answers</strong> → enable query logging and look for TCP fallback loops.</li>
+                    </ul>
+                </section>
+
+                <!-- ---------- 11. References ---------- -->
+                <section class="mb-5">
+                    <h2>10 · References</h2>
+                    <ul>
+                        <li>Arch Wiki — <a href="https://wiki.archlinux.org/title/Bind" target="_blank">Bind</a></li>
+                        <li>Arch Wiki — <a href="https://wiki.archlinux.org/title/Nftables" tZarget="_blank">nftables</a></li>
+                        <li>ISC Bind — <a href="https://bind9.readthedocs.io" target="_blank">Administrator Reference Manual</a></li>
+                        <li>RFC 1912 — Common DNS Errors</li>
+                        <li>RFC 7766 — DNS over TCP</li>
+                    </ul>
+                </section>
+
+            </div><!-- /.projet -->
+        </div><!-- /.haut-de-page -->
+    </main>
+
+    <!-- ===== Footer ===== -->
+    <div class="contacts">
+        <div class="contact-item"><i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a></div>
+        <div class="contact-item"><i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">LinkedIn</a></div>
+    </div>
+    <footer class="text-center"><p>© Germain Godefroid, <script>document.write(new Date().getFullYear());</script></p></footer>
+</div><!-- /.p-2 wrapper -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    window.addEventListener('DOMContentLoaded',()=>{
+        document.querySelectorAll('.shell-block').forEach(block=>{
+            block.addEventListener('click',()=>{
+                navigator.clipboard.writeText(block.innerText.trimEnd()).then(()=>{
+                    block.classList.add('copied');
+                    setTimeout(()=>block.classList.remove('copied'),1500);
+                });
+            });
+        });
+    });
+</script>
+</body>
+</html>
