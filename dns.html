@@ -31,6 +31,7 @@
     <ul class="nav nav-pills flex-column">
         <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
         <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+        <li class="nav-item"><a class="nav-link" target="_blank" href="https://rss.godef.be"><i class="fa-solid fa-info"></i>Rss</a></li>
         <li class="nav-item"><a class="nav-link" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
         <li class="nav-item"><a class="nav-link active" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
     </ul>
@@ -139,10 +140,15 @@ systemctl enable --now nftables</code></pre></div>
 /etc/named/           # custom include files (our views)
 /var/named/           # zone files, owned by named:named (chroot‑safe)
 /run/named/           # PID &amp; runtime artefacts
-/var/log/named.log    # we create this in logging section</code></pre></div>
+/var/log/named.log    # we create this in logging section</code></pre>
+                    </div>
                     <p class="mb-0">
+                        <div class="alert alert-info" role="alert">
+                        <i class="fa-solid fa-eye"></i>
+
                         The Arch package <em>does not</em> chroot Bind. That makes debugging easier. If you want a real chroot use
-                        <code>named -t</code> or <a href="https://wiki.archlinux.org/title/Chroot" target="_blank">systemd‑nspawn</a>.
+                        <code>named -t</code> or <a href="https://wiki.archlinux.org/title/Systemd-nspawn" target="_blank">systemd‑nspawn</a>.
+                        </div>
                     </p>
                 </section>
 
