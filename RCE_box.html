@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>godef.be</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+  <link href="styles/main.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/xd.svg">
+</head>
+<body>
+
+
+
+<div id="main-menu" class="p-2">
+  <img src="images/profil.png" alt="logo" id="logoProfil">
+  <hr>
+  <ul class="nav nav-pills flex-column">
+    <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+    <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+    <li class="nav-item"><a class="nav-link" target="_blank" href="https://rss.godef.be"><i class="fa-solid fa-info"></i>Rss</a></li>
+    <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+    <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+  </ul>
+
+</div>
+
+<div class="p-2">
+  <header>
+    <h1>
+      <strong>Reverse engineering of a internet box</strong>
+    </h1>
+  </header>
+  <div id="foxo"></div>
+  <main>
+    <div class="projet">
+
+      <div class="haut-de-page"></div>
+      
+        <section class="mb-5">
+          <h2>Important Disclaimer : Reverse Engineering Project for Educational and Demonstrative Purposes</h2>
+        
+          <p>
+            This page documents my personal reverse engineering project focused on an old internet box that is no longer 
+            in commercial use. This work is being conducted strictly for learning, technical exploration, 
+            and to show you how it could be done by hackers.
+          </p>
+
+          <p>
+            It is crucial to understand that this project has no malicious intent whatsoever. It is an exercise in reverse engineering carried out within an ethical and responsible framework.
+          </p>
+
+          <p>
+            Should I discover any sensitive or potentially exploitable information regarding the security or operation of the device during my research, I formally commit to immediately notifying the company concerned. I will cooperate closely with them to assess the nature and scope of any such finding and to define, if necessary, the most appropriate course of action to address it securely and responsibly.
+            Furthermore, I will do my best to avoid disclosing the specific name of the company or the device being tested.
+          </p>
+
+          <p>
+            This webpage serves solely as a public logbook of my experiments on the hardware of this box. I detail the different steps I have attempted, the results obtained (both successes and failures), as well as the conclusions I have drawn, particularly concerning any security mechanisms potentially implemented by the manufacturer.
+            
+            Thank you for your understanding.
+
+          </p>
+        </section>
+
+        <section class="mb-5">
+          <h2>Hide and Seek</h2>
+          <p>
+            My very first objective in undertaking this reverse engineering project was to attempt to gain shell access to the device. My aim was to delve into the device's operating system, exploring the available commands and options, and understanding the environment accessible with potentially elevated privileges.
+          </p>
+
+          <p>
+            To begin this process, I physically disassembled the internet box to examine its internal hardware. Upon a quick inspection of the circuit board, I identified a set of pins that appeared to be a standard debug header, likely implementing the UART (Universal Asynchronous Receiver-Transmitter) or RS232 protocol, commonly used for serial communication and debugging.
+          </p>
+          <p>
+            To interface with these identified pins, I acquired a <a href="https://fr.aliexpress.com/item/1005007048115658.html" target="_blank">
+              CP2102 USB-to-UART</a> converter module.
+              Using this converter and appropriate jumper wires, I connected my computer to the debug header on the box's circuit board, setting the stage to attempt serial communication and hopefully intercept boot messages or gain an interactive shell.          </p>
+          </p>
+          
+            <img src="images/projet/shell.png" class="img-fluid rounded mb-3" alt="Illustration 4" width="800" height="auto">
+          
+            <div class="alert alert-info" role="alert">
+                        <i class="fa-solid fa-eye"></i>
+                        <strong>Tip — to get the interface location : dmseg</strong><br>
+                    </div>
+          <div class="shell-block"><pre><code></code>sudo dmesg -w</pre></div>
+          <div class="alert alert-info" role="alert">
+                        <i class="fa-solid fa-eye"></i>
+                        <strong>Tip — to connect to the UART interface with screen you should try different Baud rate until you can read something</strong><br>
+                    </div>
+          <div class="shell-block"><pre><code></code>screen /dev/ttyACM0 115200</pre></div>
+          <p>
+            My first objective is to find a way, one way or another, to retrieve the firmware that is running on the box. I believe that if I manage to obtain the firmware, I can then extract and analyze its code. Access to the code potentially allows for the discovery of vulnerabilities or, at the very least, to gain a deep understanding of the system's internal workings and architecture.
+          </p>
+
+          <p>
+            Furthermore, and perhaps most importantly for testing flexibility, having the firmware allows me to emulate the entire device. This emulation capability is extremely advantageous because it allows me to conduct my tests and experiments remotely, without needing the physical hardware, making the testing process much more portable and convenient. Beyond simple portability, this emulation capability offers a crucial advantage: it allows me to know the exact state of the box at any given moment. 
+          </p>
+
+          <p>
+            After spending time experimenting and searching for a method to retrieve the firmware through the box's shell, I unfortunately found no viable way to accomplish this. My attention is now shifting to finding a method to directly read the chip where the firmware is stored on the device's circuit board. The aim is to bypass the operational system and shell entirely and recover the firmware data directly from this storage medium. However, this approach requires acquiring a specialized reader designed for this type of chip, which is the necessary next step before I can attempt to dump the firmware content.
+          </p>
+
+          <p>
+            Following the decision to directly read the firmware chip, the next steps involve a detailed physical analysis of the box's motherboard. I will map all chips to identify the one likely storing the firmware, probably a flash memory. Once identified, I will acquire the specific reader needed to connect to this chip and extract its content.
+          </p>
+        </section>
+
+
+      </div>
+    </div>
+</div>
+</main>
+<div class="contacts">
+  <div class="contact-item">
+    <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+  </div>
+  <div class="contact-item">
+    <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+  </div>
+</div>
+<footer class="text-center">
+  <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+  </p>
+</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>
+		
