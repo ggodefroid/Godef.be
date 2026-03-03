@@ -120,6 +120,66 @@ footer{
     display: inline-block;
 }
 
+/* === Page GPG : blocs clé publique (GPG + SSH) === */
+.ssh-container {
+    background-color: #181d27;
+    border: 1px solid #2d3546;
+    border-radius: 8px;
+    max-width: 800px;
+    margin: 20px auto;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+.ssh-header {
+    background-color: #1f2532;
+    padding: 10px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #2d3546;
+    font-size: 0.9em;
+    color: #929292;
+}
+.ssh-body {
+    padding: 20px;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+.ssh-body code {
+    font-family: 'Courier New', monospace;
+    color: #4caf50;
+    font-size: 0.95em;
+}
+.copy-btn {
+    background: transparent;
+    border: 1px solid #747d8c;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: all 0.2s;
+}
+.copy-btn:hover {
+    background: #4caf50;
+    border-color: #4caf50;
+}
+/* Uniquement sur la page GPG : bloc à la largeur du contenu, pas de scroll, clé GPG en vert */
+.page-gpg .ssh-container {
+    width: fit-content;
+    max-width: 100%;
+}
+.page-gpg .ssh-body {
+    overflow: visible;
+}
+.page-gpg .ssh-container pre,
+.page-gpg .gpg-key-body pre {
+    margin: 0;
+    font-family: 'Courier New', monospace;
+    color: #4caf50;
+    font-size: 0.95em;
+}
+
 #logoProfil{
     height: 95px;
     border-radius: 50%;
