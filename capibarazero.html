@@ -43,16 +43,30 @@
                 <section class="mb-5">
                     <h2>Wanted Goal</h2>
                     <p>
-                        Thanks to this open-source
-                        <a href="https://github.com/CapibaraZero" target="_blank">
-                            GitHub</a>
-                        project, which aims to provide a cheaper alternative
-                        to the Flipper Zero, based on the ESP32. Its chip alone is capable of efficiently handling Wi-Fi
-                        and Bluetooth (unlike the Flipper Zero with its STM32, which requires an additional module
-                        containing an ESP32 to manage Wi-Fi).
-                    </p>
-                    <p>
-                        To create this device, you can find a list of components to purchase :
+                        My physical security teacher at HELMo (Liège, Belgium) used a Flipper Zero to control his lecture slides.
+                        During the practical labs, he also showed how a multi-tool device like this can be used for simple demos
+                        such as basic RFID card cloning and signal replay.
+                      </p>
+                      
+                      <p>
+                        I immediately wanted one... until I saw the price. At the time, spending around 250€ on this kind of device
+                        wasn’t realistic for me. So I turned that frustration into a project: build my own “Flipper Zero–style”
+                        device, from affordable parts, while learning along the way.
+                      </p>
+                      
+                      <p>
+                        I quickly found several open-source alternatives, including Bruce Firmware and CapibaraZero.
+                        Back then, Bruce was more complete, but it didn’t really support a DIY build in the way I needed.
+                        CapibaraZero, on the other hand, was designed specifically around cheap, easy-to-source Arduino-style modules,
+                        with a clear schematic and a community-driven approach. Thanks to the open-source CapibaraZero GitHub project,
+                        I didn’t have to start from scratch and could focus on building, integrating, and improving the hardware.
+                        Since it’s ESP32-based, it can handle Wi‑Fi and Bluetooth directly on the main chip (without requiring an
+                        extra Wi‑Fi module like some STM32-based designs).
+                      </p>
+                      
+                      <p>
+                        To reproduce the build, here’s the list of parts I used / recommend:
+                      </p>
 
                     <ul>
                         <li>Soc :
@@ -130,53 +144,111 @@
                 <section class="mb-5">
                     <h2>Wiring</h2>
                     <p>
-                        The electrical schematic :
-
+                        To wire the modules together, I followed the electrical schematic below. Use it as a visual guide, but always
+                        cross-check with the firmware’s pin definitions (see the note after the diagram).
                     </p>
-                    <img src="images/projet/Electrical_diagram.png" class="img-fluid rounded mb-3" alt="Illustration 4">
+                    <img src="images/projet/Electrical_diagram.png" class="img-fluid rounded mb-3" alt="Electrical schematic for the CapibaraZero build">
 
+                    <div class="alert alert-info" role="alert">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <strong>Schematic vs. firmware</strong> — The diagram above may be out of date compared to the pin definitions in
+                        <a href="https://github.com/CapibaraZero/fw/blob/main/include/boards/esp32_s3_devkitc/pins.h" target="_blank"><code>include/boards/esp32_s3_devkitc/pins.h</code></a> of the Capibara firmware repository. In any case, I recommend
+                        builders to follow the pin definitions that are actually used by the firmware instead of blindly relying on the schematic
+                        when it comes to the binary you will flash to the SoC.
+                    </div>
+
+                    <p>
+                        Once the wiring matches the firmware, the rest is assembly. Below is a photo of the inside of my unit so you can see
+                        the actual layout—in practice, lots of tight space and lots of wires.
+                    </p>
+                    <div class="text-center my-3">
+                        <img src="images/projet/capibara_wire.png" class="img-fluid rounded mb-3 mx-auto d-block" alt="Inside view of the assembled CapibaraZero" style="max-width: 1080px;">
+                    </div>
                 </section>
                 <section class="mb-5">
                     <h2>CapibaraZero box</h2>
                     <p>
-                        In the,
-                        <a>GitHub repository</a>
-                        you can find the STL file for the 3D-printable case.
-                        I have created a more complex case, which you can download <a href="https://makerworld.com/fr/models/854126-capibarazero-case?from=search#profileId-802981">[here on Maker World]<a>.
-                        I will continue this tutorial using my version of the case.
-                        
+                        The original CapibaraZero project provides a basic 3D-printable case in its repository.
+                        I also contributed to the project by designing a more advanced enclosure myself.
+                    </p>
+                      
+                    <p>
+                    I modeled the entire case in Fusion 360 and designed it as a clean, modular stack of four layers:
+                    </p>
+                      
+                    <ul>
+                    <li>
+                        <strong>Layer 1 (front shell):</strong> the main housing where the screen is mounted and where the control buttons are placed.
+                    </li>
+                    <li>
+                        <strong>Layer 2:</strong> the PN532 NFC reader module.
+                    </li>
+                    <li>
+                        <strong>Layer 3:</strong> a second internal plate holding the ESP32‑S3 microcontroller board, plus the IR receiver and IR emitter.
+                    </li>
+                    <li>
+                        <strong>Layer 4 (power stage):</strong> the battery, the charging board, and the on/off switch.
+                        I also integrated a micro‑SD card reader accessible from the side.
+                    </li>
+                    <li>
+                        <strong>Final part:</strong> the back cover (lid) to close the assembly.
+                    </li>
+                    </ul>
+
+                    <p>
+                        The exploded view below shows how the layers fit together.
+                    </p>
+                    <img src="images/projet/vue_eclatee_capibarazero.png" class="img-fluid rounded mb-3" alt="Exploded view of the CapibaraZero enclosure">
+
+                    <p>
+                    I shared the 3D project publicly (MakerWorld) and also contributed it back to the CapibaraZero open-source ecosystem
+                    by linking it through the GitHub repository.
                     </p>
 
-                </section>
+                    <p class="mb-2">Animated exploded view of the device being assembled:</p>
+                    <div class="text-center my-3">
+                        <img src="images/projet/capibuild.gif" class="img-fluid rounded mb-3 mx-auto d-block" alt="Exploded view animation of the CapibaraZero being built" style="max-width: 720px;">
+                    </div>
+                    
+                    <p>
+                    Assembly-wise, the process is basically: mount the screen and buttons in the front shell, stack each electronic layer
+                    in order, route and connect the cables between layers, then finish with the battery/power stage and close everything with the lid.
+                    The schematic above is the “clean” view; the real-life interior is much messier-DIY cable management at its finest.
+                    </p>
+
                 </section>
                 <section class="mb-5">
                     <h2>firmware installation</h2>
                     <p>
-                        requipment :
-                        <ul>
-                            <li>
-                                Have esptool : <a href="https://github.com/espressif/esptool" target="_blank">Link</a>
-                            </li>
-                            <li>
-                                Download the <a href="https://github.com/CapibaraZero/fw/releases" target="_blank">lastest firmware</a> #For my part, this was the version 0.5.1
-                            </li>
-
-                        </ul>
-
+                        <strong>Important update:</strong> the original CapibaraZero firmware is now deprecated.
+                        The maintainer moved forward by forking Bruce Firmware, and the device we designed also works with Bruce
+                        (in particular with the “DIY” board target).
+                      </p>
+                      
+                      <p>
+                        <strong>Requirements:</strong>
+                      </p>
+                      <ul>
+                        <li>Install <a href="https://github.com/espressif/esptool" target="_blank">esptool</a></li>
+                        <li>Download the latest firmware release for your target board (CapibaraZero legacy, or Bruce “DIY”)</li>
+                      </ul>
+                      
+                      <p>
+                        From there, flashing is done with esptool by selecting the correct serial port and writing the provided firmware images.
                     </p>
-
+                    <div class="shell-block"><pre><code>esptool --port /dev/ttyACM0 write_flash 0x00000 Bruce.bin
+#or python3 -m esptool --chip esp32s3 --port UPLOAD_PORT --baud 460800 --before default_reset --after hard_reset write_flash -z --flash_mode dio --flash_freq 80m --flash_size detect 0x0000 bootloader.bin 0x8000 partitions.bin 0xe000 boot_app0.bin 0x10000 firmware.bin</code></pre></div>
                 </section>
                 <section class="mb-5">
                     <h2>what I use it for</h2>
                     <p>
-                        Wi-Fi Portal: set up a Wi-Fi network that redirects users to a captive portal hosting a website showcasing my job search status.                    </p>
-
-                    <p>
-                        Remote PDF Control: I plan to develop a Java script that allows the Capibara device, once connected to a PC via Bluetooth, to remotely control PDF slides. This will be used to present my end-of-year project.                    </p>
-                </section>
-
-                <section class="mb-5">
-                    <h2>To be continued…</h2>
+                        <strong>Slide clicker (EPITA Paris):</strong> I use it to switch slides when I present course projects during my engineering program.
+                      </p>
+                      
+                      <p>
+                        <strong>Wi‑Fi captive portal (conferences / IT conventions):</strong> I set up a Wi‑Fi access point that displays a captive portal
+                        and redirects visitors to my personal website.
+                      </p>
                 </section>
             </div>
         </div>
