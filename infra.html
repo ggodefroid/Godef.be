@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Home‑Lab Overview — godef.be</title>
 
   <!-- Bootstrap & FontAwesome -->
@@ -27,7 +28,7 @@
   <ul class="nav nav-pills flex-column">
     <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
     <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
-    <li class="nav-item"><a class="nav-link" target="_blank" href="https://rss.godef.be"><i class="fa-solid fa-info"></i>Rss</a></li>
+    <li class="nav-item"><a class="nav-link" target="_blank" rel="noopener noreferrer" href="https://rss.godef.be"><i class="fa-solid fa-info"></i>Rss</a></li>
     <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
     <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
   </ul>
@@ -49,8 +50,10 @@
           <h2 class="mb-3">Why I Reshaped My Home‑Lab</h2>
           <ul class="list-unstyled lh-lg mb-0">
             <li><i class="fa-solid fa-bolt icon-lg"></i> <strong>Power draw:</strong> old i7 tower idled at ≈80 W for almost nothing.</li>
-            <li><i class="fa-solid fa-leaf icon-lg"></i> <strong>Efficiency:</strong> moved the NAS to a Raspberry Pi 5 + USB JBOD (≈6 W).</li>
+            <li><i class="fa-solid fa-leaf icon-lg"></i> <strong>NAS:</strong> Upgraded to a real NAS with a trusted 12TB NFS share for Proxmox.</li>
             <li><i class="fa-solid fa-gears icon-lg"></i> <strong>Consolidation:</strong> Intel N100 mini‑PC now runs <code>Proxmox</code> and all VMs. / LXCs</li>
+            <li><i class="fa-solid fa-network-wired icon-lg"></i> <strong>Network segmentation:</strong> Ubiquiti VLANs split services directly from the switch.</li>
+            <li><i class="fa-solid fa-desktop icon-lg"></i> <strong>Out-of-band access:</strong> JetKVM is available from a dedicated VLAN when remote rescue is needed.</li>
             <li><i class="fa-solid fa-graduation-cap icon-lg"></i> <strong>Hands‑on learning:</strong> every layer is mine—no SaaS lock‑in.</li>
           </ul>
         </div>
@@ -74,15 +77,17 @@
 
         <div class="col">
           <div class="card h-100 p-3">
-            <h3 class="card-title"><i class="fa-solid fa-user-lock"></i> Authentik</h3>
-            <p class="card-text">One portal for SSO, MFA and group policies across Grafana, Vaultwarden, Git and more.</p>
+            <h3 class="card-title"><i class="fa-solid fa-code-branch"></i> Jorgo</h3>
+            <p class="card-text">Self-hosted git forge for code, issues and collaboration.</p>
+            <a href="https://git.godef.be" target="_blank" rel="noopener noreferrer">https://git.godef.be</a>
           </div>
         </div>
 
         <div class="col">
           <div class="card h-100 p-3">
-            <h3 class="card-title"><i class="fa-solid fa-server"></i> Bind 9</h3>
-            <p class="card-text">Self‑hosted authoritative DNS; registrar points <em>mydomain</em> directly to my box for full control.</p>
+            <h3 class="card-title"><i class="fa-solid fa-note-sticky"></i> Memos</h3>
+            <p class="card-text">A lightweight personal note-taking and knowledge base service.</p>
+            <a href="https://memos.godef.be" target="_blank" rel="noopener noreferrer">https://memos.godef.be</a>
           </div>
         </div>
 
@@ -90,14 +95,24 @@
           <div class="card h-100 p-3">
             <h3 class="card-title"><i class="fa-solid fa-file-code"></i> PrivateBin</h3>
             <p class="card-text">End‑to‑end encrypted paste‑bin. Zero server knowledge, custom expiry & no third‑party logs.</p>
-            <a href="https://bin.godef.be" target="_blank">https://bin.godef.be</a>
+            <a href="https://bin.godef.be" target="_blank" rel="noopener noreferrer">https://bin.godef.be</a>
           </div>
         </div>
 
         <div class="col">
           <div class="card h-100 p-3">
-            <h3 class="card-title"><i class="fa-solid fa-desktop"></i> Kasm Workspaces</h3>
-            <p class="card-text">Disposable browser or full desktop in a Docker container—perfect for Tor sessions & testing.</p>
+            <h3 class="card-title"><i class="fa-solid fa-rss"></i> FreshRSS</h3>
+            <p class="card-text">Self-hosted RSS reader to follow feeds without third-party services.</p>
+            <a href="https://rss.godef.be" target="_blank" rel="noopener noreferrer">https://rss.godef.be</a>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card h-100 p-3">
+            <h3 class="card-title"><i class="fa-solid fa-terminal"></i> wimd</h3>
+            <p class="card-text">Fun terminal print service: <code>curl -NL wimd.godef.be</code>.</p>
+            <p class="card-text mb-1">Code source:</p>
+            <a href="https://github.com/ggodefroid/wimd" target="_blank" rel="noopener noreferrer">https://github.com/ggodefroid/wimd</a>
           </div>
         </div>
       </div>
@@ -111,57 +126,11 @@
           <div class="card p-3 h-100">
             <h3 class="card-title"><i class="fa-solid fa-bell"></i> Proxmox Login Watchdog</h3>
             <p>A Python script tails <code>journalctl</code> for <em>pvedaemon</em> logins and pushes instant Telegram alerts on success or failure.</p>
-            <a href="https://github.com/ggodefroid/pve-notifier" class="stretched-link" target="_blank">GitHub — pve‑notifier</a>
+            <a href="https://github.com/ggodefroid/pve-notifier" class="stretched-link" target="_blank" rel="noopener noreferrer">GitHub — pve‑notifier</a>
           </div>
         </div>
         <div class="col-md-4 text-center">
           <img src="images/projet/pvenotifier_alert.png" class="img-fluid rounded" alt="Alert example">
-        </div>
-      </div>
-    </section>
-
-    <!-- FUTURE -->
-    <section class="container-fluid">
-      <h2 class="mb-4">Roadmap</h2>
-      <div class="accordion accordion-flush" id="roadmap">
-        <div class="accordion-item bg-transparent border-0">
-          <h2 class="accordion-header" id="wazuh-head">
-            <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#wazuh-body" aria-expanded="false" aria-controls="wazuh-body">
-              <i class="fa-solid fa-magnifying-glass"></i>&nbsp; Deploy Wazuh SIEM
-            </button>
-          </h2>
-          <div id="wazuh-body" class="accordion-collapse collapse" data-bs-parent="#roadmap">
-            <div class="accordion-body">
-              Centralise logs & run rule‑based alerts with Discord / Telegram webhooks for SOC‑style visibility.
-            </div>
-          </div>
-        </div>
-
-        <div class="accordion-item bg-transparent border-0">
-          <h2 class="accordion-header" id="poste-head">
-            <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#poste-body" aria-expanded="false" aria-controls="poste-body">
-              <i class="fa-solid fa-envelope"></i>&nbsp; Poste.io Mail Server
-            </button>
-          </h2>
-          <div id="poste-body" class="accordion-collapse collapse" data-bs-parent="#roadmap">
-            <div class="accordion-body">
-              All‑in‑one Postfix/Dovecot with DKIM. Outbound SMTP relayed through a €2 VPS to bypass ISP port 25 blocks.
-            </div>
-          </div>
-        </div>
-
-        <div class="accordion-item bg-transparent border-0">
-          <h2 class="accordion-header" id="ipv4-head">
-            <button class="accordion-button collapsed bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#ipv4-body" aria-expanded="false" aria-controls="ipv4-body">
-              <i class="fa-solid fa-network-wired"></i>&nbsp; Public IPv4/IPv6 via WireGuard Tunnel
-            </button>
-          </h2>
-          <div id="ipv4-body" class="accordion-collapse collapse" data-bs-parent="#roadmap">
-            <div class="accordion-body">
-              Lease a micro‑VPS, DNAT port 25 + others through WireGuard back to the home lab. See the guide
-              <a href="https://creeper.fr/wireguard/" target="_blank">"Avoir des adresses IPv4/IPv6 chez soi"</a> (FR).
-            </div>
-          </div>
         </div>
       </div>
     </section>
@@ -171,7 +140,7 @@
   <!-- ===== Footer ===== -->
   <div class="contacts mt-5">
     <div class="contact-item"><i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a></div>
-    <div class="contact-item"><i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">LinkedIn</a></div>
+    <div class="contact-item"><i class="fa-brands fa-linkedin"></i><a target="_blank" rel="noopener noreferrer" href="https://www.linkedin.com/in/germain-godefroid-581454260/">LinkedIn</a></div>
   </div>
   <footer class="text-center mb-4"><p>© Germain Godefroid, <script>document.write(new Date().getFullYear());</script></p></footer>
 </div><!-- /.p-2 wrapper -->

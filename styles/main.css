@@ -287,10 +287,6 @@ footer{
 
 .icon-lg{font-size:1.8rem;margin-right:.5rem;color:#0d6efd}
 
-.accordion{
-    --bs-accordion-color: #a9b1b8;
-}
-
 .project-card-desc {
     font-size: 0.95em;
     color: #B0B0B0;
