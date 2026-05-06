@@ -1,0 +1,363 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>godef.be</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+  <link href="styles/main.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/xd.svg">
+</head>
+<body>
+
+
+
+<div id="main-menu" class="p-2">
+  <img src="images/profil.png" alt="logo" id="logoProfil">
+  <hr>
+  <ul class="nav nav-pills flex-column">
+    <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+    <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+    <li class="nav-item"><a class="nav-link" target="_blank" href="https://rss.godef.be"><i class="fa-solid fa-info"></i>Rss</a></li>
+    <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+    <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+  </ul>
+
+</div>
+
+<div class="p-2">
+  <header>
+    <h1>
+      <strong>EPITA - systems, C, Java, and networks</strong>
+    </h1>
+  </header>
+  <div id="foxo"></div>
+  <main>
+    <div class="projet">
+
+      <div class="haut-de-page"></div>
+
+        <section class="mb-5">
+          <h2>What this page is</h2>
+
+          <p>
+            I study at EPITA, a French computer science engineering school where a large part of the curriculum is built around
+            hands-on programming, Unix systems, and building software that actually runs under real constraints. This page is a
+            high-level map of the kind of work I do there: not a syllabus, but the stack of ideas and tools that keep showing up
+            when I write a daemon in C, debug a Java service, or chase a packet across a network.
+          </p>
+
+          <p>
+            When I need a place to park exact commands or notes on Linux and tooling, I use my memo site at
+            <a href="https://memos.godef.be" target="_blank" rel="noopener">memos.godef.be</a>. Think of it as the lab notebook;
+            this page is the story that ties the notebooks together.
+          </p>
+
+          <div class="alert alert-warning" role="alert">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <strong>Forgejo and school policy</strong><br>
+            I host almost all of my coursework and personal repositories on a private Forgejo instance. I cannot open that forge
+            to the public while I am still a student: EPITA treats student code sharing very strictly, and publishing assignments
+            or solutions can be penalised. I do not publish coursework sources here; what I share instead
+            is this narrative and the technical memos I am allowed to post separately.
+          </div>
+        </section>
+
+        <section class="mb-5">
+          <h2>C programming | pool, exams, and rewrites from scratch</h2>
+
+          <p>
+            EPITA starts with an intensive C immersion usually called the <strong>pool</strong>: short deadlines, peer review,
+            and daily progress checks. The goal is not clever tricks but mechanical correctness under pressure: clean compilation
+            with strict flags, consistent style, tests that actually fail when they should, and the habit of reading man pages
+            before guessing. Exams later reuse the same expectations at a higher pace, so the pool is really training for
+            predictable engineering.
+          </p>
+
+          <p>
+            I rebuilt several foundational projects myself to own the details: a minimal
+            <code>make</code> clone (<strong>minimake</strong>), a dynamic allocator backed by <code>mmap</code> instead of the
+            libc heap (<strong>malloc</strong>), and a small archiver that understands the USTAR layout named
+            <strong>epitar</strong>. Each project forces the same lesson in a different shape: alignments,
+            padding, lifetime rules, and error paths that do not leak memory or file descriptors. When the compiler and
+            Valgrind agree, you know you are finally managing memory instead of hoping the runtime will forgive you.
+          </p>
+
+          <p>
+            The through-line is deliberately low-level: the ABI and the linker stay visible, there is no hidden magic beyond what
+            I mapped myself, and every allocation has an owner. That mindset is what later systems work builds on.
+          </p>
+
+          <div class="alert alert-info" role="alert">
+            <i class="fa-solid fa-eye"></i>
+            <strong>Long live the memos</strong><br>
+            Sanitizer flags, <code>gdb</code> recipes, and toolchain notes usually end up on
+            <a href="https://memos.godef.be" target="_blank" rel="noopener">memos.godef.be</a> once I have battle-tested them.
+          </div>
+
+          <div class="shell-block"><pre><code>gcc -std=c11 -Wall -Wextra -Werror -g -fsanitize=address,undefined main.c -o main</code></pre></div>
+        </section>
+
+        <section class="mb-5">
+          <h2>Unix systems - user space tools, then the kernel boundary</h2>
+
+          <p>
+            Systems lectures and labs are not only about calling POSIX functions: they walk you through reimplementing the tools
+            you already rely on so the file formats and kernel protocols stop being black boxes. A major thread is rebuilding a
+            <strong>mini <code>gdb</code></strong> (<code>my_db</code>): the same user-visible behaviour on a reduced command set,
+            backed by the same ideas the real debugger uses under the hood. Along the way you read the official
+            <code>gdb</code> documentation, compare traces side by side with GNU <code>gdb</code>, and learn why debug info exists
+            at all instead of treating “step” as a single indivisible opcode.
+          </p>
+
+          <h3 class="h5 mt-4">From <code>my_db</code> and <code>gdb</code> through <code>my_nm</code> and <code>my_strace</code></h3>
+
+          <p>
+            <strong>my_db</strong> forced me into <strong>DWARF</strong>: compile units, DIE trees, attribute encodings, and
+            especially line number programs so a program counter can be mapped back to a source file and line. I learned how
+            <code>gcc -g</code> emits <code>.debug_info</code>, <code>.debug_line</code>, <code>.debug_abbrev</code>, and friends,
+            how those sections tie to the executable’s code segment, and why breakpoints land on instruction boundaries rather than
+            on C tokens. Breakpoint insertion, single stepping with respect to signals, stack unwinding, and memory inspection all
+            became exercises in reading specs and matching the reference <code>gdb</code> when my register dumps disagreed with
+            my expectations.
+          </p>
+
+          <p>
+            <strong>my_nm</strong> is the static counterpart: the course drives everything through the <strong>ELF</strong>
+            specification. I started with identification - magic bytes <code>0x7f ELF</code>, values in <code>e_ident</code> such as
+            <code>EI_CLASS</code> (32-bit versus 64-bit), <code>EI_DATA</code> (endianness), and <code>EI_OSABI</code> - so I could
+            reject a non-ELF or decide how to parse the rest. Then I walked the program header table for segments, the section
+            header table for <code>.symtab</code> / <code>.dynsym</code>, relocation entries, and symbol binding and type flags
+            (<code>STB_*</code>, <code>STT_*</code>) until listing symbols is just structured table walking. Once that clicks,
+            “where does this label live?” is no longer opaque tooling but a layout you can draw on paper.
+            <strong>my_strace</strong> widens the lens to dynamics: attach to a tracee, stop at syscall boundaries, decode
+            arguments and errno on return, and rebuild a timeline of kernel interactions without the original binary doing the work
+            for me. Together the three projects connect the same machine from three distances: full interactive debugging with
+            DWARF, ELF layout and symbols, and the syscall boundary.
+          </p>
+
+          <p>
+            Practically, I lived inside <code>gdb</code> while validating each milestone: watchpoints on structure fields,
+            scripted breakpoint commands, and disassembly whenever the ABI stopped matching my expectations. The memos site holds
+            the exact command sequences I reuse when I forget the syntax for the tenth time.
+          </p>
+
+          <h3 class="h5 mt-4">grootkit (SYS2) - theoretical rootkit, LKM, and fleet-shaped infrastructure</h3>
+
+          <p>
+            I am currently working on <strong>grootkit</strong>, a <strong>theoretical</strong> systems project for SYS2: it is
+            meant for controlled lab machines and coursework documentation, not for sneaking onto real networks. The on-host
+            piece is a Linux kernel module written in C, built with the kernel’s kbuild machinery, which produces a
+            <code>.ko</code> I can load with <code>insmod</code> on a compatible kernel version. Kernel modules are tightly
+            coupled to the ABI (Application binary interface) of a given tree, so the project tracks which kernel versions the code is known to build against and
+            treats anything else as unsupported until ported.
+          </p>
+
+          <p>
+            The module is only half of the story. The other half is an infrastructure layer: a <strong>command and control</strong>
+            style server that centralises agents, plus <strong>fleet</strong> or “park” management so I can reason about many
+            lab hosts instead of one. Traffic is shaped through a <strong>bounce</strong> entry point implemented as a reverse
+            proxy and TCP forwarding path (HAProxy in front of the C2 server), which keeps a single public listener while the
+            real services sit behind it and can be swapped or filtered without recompiling the agent. The architecture is
+            intentionally close to real incident-response training setups: explicit network layout, reproducible VMs, and CI that
+            builds the module against pinned kernel headers so regressions show up before you boot a machine.
+          </p>
+
+          <div class="alert alert-warning" role="alert">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <strong>Scope</strong><br>
+            grootkit is documented and exercised only in the school context. Treating kernel hooks, hidden channels, or C2
+            patterns as toys outside an authorised environment would be irresponsible; here the point is to understand the
+            mechanisms well enough to defend against them.
+          </div>
+        </section>
+
+        <section class="mb-5">
+          <h2>Java - atelier, layered architecture, and the JWS project</h2>
+
+          <p>
+            After C, EPITA runs a shorter Java intensive called an <strong>atelier</strong>: same spirit as the pool
+            (short exercises, strict deadlines, lots of feedback) but aimed at the JVM ecosystem and a lot lighter than the real piscine, build tools, and idiomatic
+            object-oriented design instead of manual memory. I learned to lean on the compiler for type structure, on the test
+            runner for regressions, and on the standard library instead of reinventing containers.
+          </p>
+
+          <p>
+            The architectural pattern we were asked to internalise for enterprise-style work is a classic
+            <strong>layered architecture</strong>: a <strong>presentation</strong> boundary that speaks HTTP and JSON, a
+            <strong>domain</strong> layer that encodes use cases and business rules, and a <strong>data</strong> layer that maps
+            objects to tables. Converters sit between presentation DTOs and domain entities so REST shapes do not leak into the
+            core model. On the implementation side that maps cleanly to <strong>Jakarta REST</strong> (JAX-RS) resources,
+            injectable services, and <strong>JPA</strong> entities with repositories - in my case on top of
+            <strong>Quarkus</strong> so dependency injection, persistence, and dev-mode reload all come from one supported stack.
+          </p>
+
+          <p>
+            The large graded exercise for the Java Web Services module is <strong>Yakamon</strong>: a game-like HTTP API where a
+            player starts a session on a chosen map, then interacts through dedicated resources for state and moves. AND I LOVED IT SOOOO MUCHHH!!!!.
+            The interesting engineering work is not the gimmick but the discipline - transactional boundaries when the world state
+            changes, validation at the edge, and keeping the domain rules testable without starting an HTTP server for every
+            assertion. Maven coordinates the build; Quarkus runs the show at runtime; the memos site still holds the curl
+            snippets and database URLs I use when switching machines.
+          </p>
+        </section>
+
+        <section class="mb-5">
+          <h2>Networks</h2>
+
+          <p>
+            I had already seen most of the classic stack at HELMo, so in EPITA’s network track I focus on what find interresting. I'm doings some labs work in <strong>GNS3</strong> for routing, DHCP, and DNS.
+          </p>
+
+          <h3 class="h5 mt-4">Link-local IPv6 is not “random” when the NIC still has a factory MAC</h3>
+
+          <p>
+            A stable <strong>link-local</strong> address under <code>fe80::/10</code> often comes straight from the interface’s
+            48-bit MAC through <strong>modified EUI-64</strong>: split the MAC into its upper three octets and lower three octets,
+            insert <code>ff:fe</code> in the middle, then <strong>flip the universal/local bit</strong> (the second-least-significant
+            bit of the first octet) as required by RFC&nbsp;4291 so the 64-bit interface identifier is valid on the wire. The
+            result is an address that looks opaque at first glance but is completely reproducible from the card which matters
+            for scanning, neighbour caches, and reasoning about privacy extensions when they are turned off.
+          </p>
+
+          <h3 class="h5 mt-4">Reading the first octet of a non-randomised MAC</h3>
+
+          <div class="diagram-light-bg">
+            <img src="images/projet/MAC-48_Address.png" class="img-fluid rounded" alt="MAC-48 address diagram showing OUI, U/L and I/G bits in the first octet" width="800">
+          </div>
+
+          <p>
+            The <strong>least significant bit</strong> of the first octet is the <strong>I/G</strong> (individual/group) flag:
+            <code>0</code> means the frame is addressed to one station (unicast at the Ethernet level), <code>1</code> means
+            multicast. The <strong>next bit</strong> is the <strong>U/L</strong> (universal/local) flag: <code>0</code> means the
+            address follows a globally assigned OUI (Organizationally Unique Identifier) from the manufacturer, <code>1</code> means it was chosen locally (for example
+            by a hypervisor or by hand). Those two bits are enough to sanity-check whether an address “should” behave as a unicast
+            NIC, a multicast group, or a locally administered virtual interface before I even open the IPv4 or IPv6 header.
+          </p>
+
+          <h3 class="h5 mt-4">Well-known Ethernet patterns</h3>
+
+          <p>
+            Beyond vendor OUIs, several prefixes are reserved or widely recognised. The table is a cheat sheet I keep in mind when
+            a capture shows traffic I did not explicitly configure.
+          </p>
+
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+              <thead class="table-light">
+                <tr>
+                  <th scope="col">Pattern</th>
+                  <th scope="col">Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>FF:FF:FF:FF:FF:FF</code></td>
+                  <td>Layer-two broadcast</td>
+                </tr>
+                <tr>
+                  <td><code>01:00:0C:CC:CC:CC</code></td>
+                  <td>Cisco Discovery Protocol (CDP)</td>
+                </tr>
+                <tr>
+                  <td><code>01:80:C2:00:00:00</code></td>
+                  <td>IEEE spanning tree (STP) group address</td>
+                </tr>
+                <tr>
+                  <td><code>33:33:xx:xx:xx:xx</code></td>
+                  <td>IPv6 multicast mapped from multicast groups (<code>33:33</code> plus the low 32 bits of the IPv6 group)</td>
+                </tr>
+                <tr>
+                  <td><code>01:00:5E:xx:xx:xx</code></td>
+                  <td>IPv4 multicast on Ethernet (<code>01-00-5E</code> / 23 low bits of the IPv4 multicast address)</td>
+                </tr>
+                <tr>
+                  <td><code>00:00:0C:07:AC:xx</code></td>
+                  <td>Cisco HSRP virtual MAC (group in the last nibble)</td>
+                </tr>
+                <tr>
+                  <td><code>00:00:5E:00:01:xx</code></td>
+                  <td>VRRP virtual router MAC (<code>xx</code> is the virtual router ID)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="shell-block"><pre><code>ip -6 addr show
+ip neigh show</code></pre></div>
+        </section>
+
+        <section class="mb-5">
+          <h2>How the pieces fit together</h2>
+
+          <p>
+            I write a careful C module on Monday, untangle a Java stack trace on Tuesday, and explain a TCP capture on Wednesday.
+            The technologies look different on the surface, but I repeat the same habits: I read the specification,
+            I write the smallest program that reproduces the issue, I measure before optimising, and I document the assumptions I baked
+            into the code.
+          </p>
+
+          <p>
+            I keep this public site intentionally light on assignment-specific detail and heavy on durable concepts. For anything
+            that looks like a cheat sheet, the honest home is still
+            <a href="https://memos.godef.be" target="_blank" rel="noopener">memos.godef.be</a>, where I can iterate quickly without
+            tripping over coursework redistribution rules.
+          </p>
+        </section>
+
+    </div>
+  </main>
+  <div class="contacts">
+    <div class="contact-item">
+      <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+    </div>
+    <div class="contact-item">
+      <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+    </div>
+  </div>
+  <footer class="text-center">
+    <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+    </p>
+  </footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.shell-block').forEach(function (block) {
+    block.addEventListener('click', function () {
+      var code = block.querySelector('pre code');
+      var text = code ? code.innerText.trimEnd() : block.innerText.trimEnd();
+      function markCopied() {
+        block.classList.add('copied');
+        setTimeout(function () { block.classList.remove('copied'); }, 1500);
+      }
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(markCopied).catch(function () {
+          fallbackCopy(text, markCopied);
+        });
+      } else {
+        fallbackCopy(text, markCopied);
+      }
+    });
+  });
+  function fallbackCopy(text, done) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    done();
+  }
+});
+</script>
+</body>
+</html>

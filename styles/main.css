@@ -477,6 +477,23 @@ footer{
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
 }
 
+/* Transparent / line-art diagrams on dark backgrounds */
+.diagram-light-bg {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 1rem;
+    padding: 1.25rem 1.5rem;
+    background: #eef1f5;
+    border: 1px solid #c5ccd6;
+    border-radius: 8px;
+    text-align: center;
+}
+.diagram-light-bg img {
+    margin: 0;
+    vertical-align: middle;
+}
 
 /* === Click-to-copy shell blocks =============================== */
 .shell-block{
@@ -489,6 +506,15 @@ footer{
     cursor:pointer;
     font-family: "Courier New", monospace;
     color:#c7c7c7;
+    overflow-x:auto;
+}
+.shell-block pre,
+.shell-block code{
+    margin:0;
+    user-select:text;
+    cursor:text;
+    white-space:pre-wrap;
+    word-break:break-word;
 }
 .shell-block:hover{
     background:#1f2532;
