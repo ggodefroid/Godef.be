@@ -34,6 +34,11 @@
       <strong>Connected plant nursery</strong>
     </h1>
   </header>
+  <p class="mb-4">
+    <i class="fa-brands fa-github"></i>
+    &nbsp;Firmware, wiring diagrams, Makefile, and README:
+    <a href="https://github.com/ggodefroid/connected_plant_nursery" target="_blank" rel="noopener noreferrer">github.com/ggodefroid/connected_plant_nursery</a>
+  </p>
   <div id="foxo"></div>
   <main>
     <div class="haut-de-page">
@@ -119,11 +124,10 @@
             For the DS18B20 sensor, you need to add a 4.7kΩ pull-up resistor between the yellow data wire (DQ) and the 3.3V  positive power.
           </p>
           <p>
-            You can access the code
-            <a href="sensorbox.html"target="_blank">
-              [here]
-            </a>
-            if you're interested.
+            The sketches live in the GitHub repository
+            (<a href="https://github.com/ggodefroid/connected_plant_nursery/tree/main/firmware/esp32_sensor_box" target="_blank" rel="noopener noreferrer"><code>firmware/esp32_sensor_box</code></a>).
+            You can still read the same listing
+            <a href="sensorbox.html" target="_blank">on this site</a>.
             This code was for testing purposes and it might be not very clean.
             Basically, it takes a measurement from each sensor every 10 seconds, calculates the average of 10 readings for each sensor, and then sends the average data of each individual sensor via LoRa
           </p>
@@ -141,11 +145,11 @@
 
           </p>
           <p>
-            You can access the code
-            <a href="gateway.html"target="_blank">
-              [here]
-            </a>
-            if you're interested. Again this code was for testing purposes and it might be not very clean.
+            The gateway sketch is on GitHub
+            (<a href="https://github.com/ggodefroid/connected_plant_nursery/tree/main/firmware/esp32_lora_gateway" target="_blank" rel="noopener noreferrer"><code>firmware/esp32_lora_gateway</code></a>).
+            Inline copy on this site:
+            <a href="gateway.html" target="_blank">gateway.html</a>.
+            Again this code was for testing purposes and it might be not very clean.
 
           </p>
         </section>
