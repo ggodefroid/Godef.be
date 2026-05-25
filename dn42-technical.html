@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>DN42 Technical Documentation - godef.be</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    <link href="styles/main.css" rel="stylesheet" type="text/css">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/xd.svg">
+</head>
+<body>
+
+<div id="main-menu" class="p-2">
+    <img src="images/profil.png" alt="logo" id="logoProfil">
+    <hr>
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+        <li class="nav-item"><a class="nav-link" target="_blank" href="https://rss.godef.be"><i class="fa-solid fa-info"></i>Rss</a></li>
+        <li class="nav-item"><a class="nav-link" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+        <li class="nav-item"><a class="nav-link active" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+    </ul>
+</div>
+
+<div class="p-2">
+    <header>
+        <h1>
+            <strong>DN42 Technical Documentation</strong>
+        </h1>
+    </header>
+    <div id="foxo"></div>
+    <main>
+        <div class="projet">
+            <div class="haut-de-page">
+
+                <section class="mb-5">
+                    <h2>Scope</h2>
+                    <p>
+                        This page documents the technical configuration used to connect my lab to DN42. It is a configuration reference, not a project story. The design uses one Linux LXC as the DN42 edge, one Cisco C1101 as the internal router, and one Proxmox service LXC directly attached to a public DN42 VLAN.
+                    </p>
+                    <p>
+                        Private WireGuard keys, passwords and SSH material are intentionally replaced by redacted placeholders. Public routing values, public endpoints, VLAN IDs and service addresses are kept because they are required to understand and reproduce the setup.
+                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Address plan</h2>
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        <div class="col">
+                            <div class="card h-100 p-3">
+                                <h3 class="card-title"><i class="fa-solid fa-id-card"></i> DN42 registry</h3>
+                                <p class="card-text">ASN: <code>AS4242420621</code></p>
+                                <p class="card-text">Maintainer: <code>XYDRIVE-MNT</code></p>
+                                <p class="card-text">IPv4 prefix: <code>172.22.149.64/27</code></p>
+                                <p class="card-text">IPv6 prefix: <code>fd51:fbc4:f614::/48</code></p>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 p-3">
+                                <h3 class="card-title"><i class="fa-solid fa-network-wired"></i> Internal addressing</h3>
+                                <p class="card-text">VLAN 10 gateway: <code>172.22.149.65/27</code>, <code>fd51:fbc4:f614:1::1/64</code></p>
+                                <p class="card-text">VLAN 99 interco: <code>10.255.255.0/30</code>, <code>fd51:fbc4:f614:ffff::/64</code></p>
+                                <p class="card-text">DN42 LXC: <code>10.255.255.1</code>, <code>fd51:fbc4:f614:ffff::1</code></p>
+                                <p class="card-text">Cisco: <code>10.255.255.2</code>, <code>fd51:fbc4:f614:ffff::2</code></p>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 p-3">
+                                <h3 class="card-title"><i class="fa-solid fa-server"></i> Services</h3>
+                                <p class="card-text"><code>drive42</code>: <code>172.22.149.66/27</code></p>
+                                <p class="card-text"><code>drive42</code>: <code>fd51:fbc4:f614:1::42/64</code></p>
+                                <p class="card-text">HTTP: <code>http://172.22.149.66/</code></p>
+                                <p class="card-text">Minecraft: <code>172.22.149.66:25565</code></p>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 p-3">
+                                <h3 class="card-title"><i class="fa-solid fa-laptop"></i> Client access</h3>
+                                <p class="card-text">Arch laptop example: <code>172.22.149.67/27</code></p>
+                                <p class="card-text">Arch laptop example: <code>fd51:fbc4:f614:1::67/64</code></p>
+                                <p class="card-text">Access port: <code>GigabitEthernet0/1/1</code> in VLAN 10</p>
+                                <p class="card-text">DNS used during tests: <code>172.22.149.66</code></p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Topology</h2>
+                    <p>
+                        Proxmox is a Layer 2 bridge host for this DN42 segment. The Linux DN42 gateway terminates WireGuard and runs FRR. The Cisco is the local router for the service/client VLAN and receives DN42 routes from the gateway over iBGP.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>RoutedBits Paris AS4242420207             Kioubit FR1 AS4242423914
+        |                                          |
+        | WireGuard peer1 + eBGP                  | WireGuard kioubit-fr1 + eBGP
+        |                                          |
+        +------------------+-----------------------+
+                           |
+                    LXC Dn42 gateway
+                    FRR + WireGuard
+                    AS4242420621
+                           |
+                           | VLAN 99 / iBGP
+                           | 10.255.255.1/30 <-> 10.255.255.2/30
+                           |
+                    Cisco C1101
+                           |
+                           | VLAN 10 / public DN42 LAN
+                           |
+             +-------------+------------------+
+             |                                |
+      Proxmox vmbr1 trunk               Cisco access ports
+             |                                |
+       drive42 service LXC              Arch laptop
+       172.22.149.66                    172.22.149.67</pre>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>How DN42 peering works</h2>
+                    <p>
+                        DN42 is built from private point-to-point links between operators. To connect to someone, both sides first agree on peering details: ASN, WireGuard public key, public endpoint, tunnel port, link-local BGP address, allowed prefixes and routing policy. After that, each side creates a WireGuard peer and runs BGP over the tunnel.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>1. Exchange peering information with another DN42 operator
+2. Create a WireGuard tunnel between both public Internet endpoints
+3. Assign tunnel addresses, often IPv6 link-local addresses like fe80::621
+4. Start a BGP session over the WireGuard interface
+5. Import the remote DN42 routes
+6. Export only the prefixes that my AS is allowed to announce</pre>
+                    </div>
+                    <p>
+                        WireGuard provides the encrypted transport. It does not decide where packets should go inside DN42. BGP does that job. BGP exchanges route information between autonomous systems, selects usable paths and lets each AS announce its own prefixes without using static routes for every DN42 network.
+                    </p>
+                    <p>
+                        The sessions to RoutedBits and Kioubit are eBGP because they connect <code>AS4242420621</code> to different autonomous systems. The session between the LXC gateway and the Cisco is iBGP because both devices are inside my own AS. eBGP is used between networks. iBGP is used inside my network to move the routes learned at the edge toward the internal router.
+                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>VLAN and bridge design</h2>
+                    <p>
+                        The physical link between Proxmox and the Cisco is a trunk. A trunk is an Ethernet link that can carry several VLANs at the same time by adding an 802.1Q VLAN tag to frames. Instead of using one cable for the service LAN and another cable for the BGP interconnect, the same Proxmox-to-Cisco cable transports VLAN 10 and VLAN 99.
+                    </p>
+                    <p>
+                        VLAN 10 carries public DN42 hosts and clients. VLAN 99 carries the routed interconnect between the DN42 gateway LXC and the Cisco. This separation keeps the service network and the routing interconnect clean while still using only one physical cable between the Proxmox host and the Cisco.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>VLAN 10 - LAN-DN42
+Purpose: public DN42 services and clients
+Cisco SVI: Vlan10
+Cisco IPv4: 172.22.149.65/27
+Cisco IPv6: fd51:fbc4:f614:1::1/64
+Proxmox: vmbr1 with LXC VLAN tag 10
+drive42: 172.22.149.66/27, fd51:fbc4:f614:1::42/64
+Laptop: access VLAN 10, for example 172.22.149.67/27
+
+VLAN 99 - INTERCO-BGP
+Purpose: point-to-point routing between Cisco and the DN42 gateway LXC
+Cisco SVI: Vlan99
+Cisco IPv4: 10.255.255.2/30
+Cisco IPv6: fd51:fbc4:f614:ffff::2/64
+LXC gateway IPv4: 10.255.255.1/30
+LXC gateway IPv6: fd51:fbc4:f614:ffff::1/64</pre>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Proxmox bridge configuration</h2>
+                    <p>
+                        The Proxmox host keeps the Cisco-facing USB interface inside <code>vmbr1</code>. The host itself does not route the DN42 IPv4 service LAN. It only bridges tagged frames to LXC interfaces.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>auto lo
+iface lo inet loopback
+
+iface enp2s0 inet manual
+
+auto vmbr0
+iface vmbr0 inet static
+        address 10.10.0.2/24
+        gateway 10.10.0.1
+        bridge-ports enp2s0
+        bridge-stp off
+        bridge-fd 0
+
+auto vmbr1
+iface vmbr1 inet manual
+        bridge-ports usb-cisco
+        bridge-stp off
+        bridge-fd 0
+
+source /etc/network/interfaces.d/*</pre>
+                    </div>
+					<p>
+						 In the target design, <code>vmbr1</code> is the Cisco-facing bridge. LXC interfaces are attached to this bridge with the required VLAN tag: <code>tag=10</code> for public DN42 services and <code>tag=99</code> for the BGP interconnect.
+					</p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Cisco C1101 VLAN configuration</h2>
+                    <p>
+                        The important Cisco state is the trunk on <code>GigabitEthernet0/1/0</code>, access ports in VLAN 10 for clients, and two SVIs. <code>Vlan10</code> is the public DN42 LAN. <code>Vlan99</code> is the routed link to the gateway LXC.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>vlan 10
+ name LAN-DN42
+!
+vlan 99
+ name INTERCO-BGP
+!
+interface GigabitEthernet0/1/0
+ description PROXMOX-VMbr1-TRUNK
+ switchport trunk allowed vlan 10,99
+ switchport mode trunk
+!
+interface GigabitEthernet0/1/1
+ description DN42-CLIENT-ACCESS
+ switchport access vlan 10
+ switchport mode access
+!
+interface GigabitEthernet0/1/2
+ description DN42-CLIENT-ACCESS
+ switchport access vlan 10
+ switchport mode access
+!
+interface GigabitEthernet0/1/3
+ description DN42-CLIENT-ACCESS
+ switchport access vlan 10
+ switchport mode access
+!
+interface Vlan10
+ description DN42-PUBLIC-LAN
+ ip address 172.22.149.65 255.255.255.224
+ ipv6 address FD51:FBC4:F614:1::1/64
+!
+interface Vlan99
+ description DN42-LXC-GATEWAY-INTERCO
+ ip address 10.255.255.2 255.255.255.252
+ ipv6 address FD51:FBC4:F614:FFFF::2/64</pre>
+                    </div>
+                    <p>
+                        Checks : VLAN 10 active on <code>Gi0/1/1</code>, <code>Gi0/1/2</code> and <code>Gi0/1/3</code>, with <code>Gi0/1/0</code> trunking VLANs <code>10,99</code>.
+                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Cisco BGP and routing</h2>
+                    <p>
+                        BGP is the routing protocol used here because DN42 is a network of autonomous systems. Each participant announces prefixes from its own AS and learns remote prefixes from peers. Static routes would not scale because every new DN42 network would need to be added manually. BGP lets the route table update automatically when peers add, remove or change paths.
+                    </p>
+                    <p>
+                        The Cisco runs inside the same AS as the LXC gateway, so the session toward <code>10.255.255.1</code> is iBGP. The LXC gateway is the edge router that talks to other ASes over eBGP. The Cisco is the internal router that owns VLAN 10 and forwards local service/client traffic. iBGP is used so the Cisco can learn the DN42 routes without building WireGuard tunnels itself.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>ip routing
+ipv6 unicast-routing
+!
+ipv6 route FD51:FBC4:F614::/48 Null0
+!
+router bgp 4242420621
+ bgp router-id 10.255.255.2
+ neighbor 10.255.255.1 remote-as 4242420621
+ neighbor 10.255.255.1 description LXC-DN42-GATEWAY
+ !
+ address-family ipv4
+  network 172.22.149.64 mask 255.255.255.224
+  neighbor 10.255.255.1 activate
+ exit-address-family
+ !
+ address-family ipv6
+  network FD51:FBC4:F614::/48
+  neighbor 10.255.255.1 activate
+ exit-address-family</pre>
+                    </div>
+                    <p>
+                        The static IPv6 route to <code>Null0</code> exists so the Cisco can originate the full <code>fd51:fbc4:f614::/48</code> summary while still routing the active <code>fd51:fbc4:f614:1::/64</code> service subnet locally.
+                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>DN42 gateway LXC - system networking</h2>
+                    <p>
+                        The gateway LXC is the DN42 edge. It must forward traffic and must not drop valid routed packets through reverse path filtering. These values are persisted in <code>/etc/sysctl.d/99-dn42.conf</code>.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>net.ipv4.ip_forward = 1
+net.ipv6.conf.all.forwarding = 1
+net.ipv6.conf.default.forwarding = 1
+net.ipv4.conf.all.rp_filter = 0
+net.ipv4.conf.default.rp_filter = 0</pre>
+                    </div>
+                    <div class="mt-2">
+                        <div class="alert alert-info" role="alert">
+                            <i class="fa-solid fa-route"></i>
+                            <strong>IPv4 forwarding</strong>
+                            <p class="mb-0"><code>net.ipv4.ip_forward = 1</code> lets the Linux gateway route IPv4 packets between WireGuard peers and the Cisco interconnect. Without it, BGP can learn routes, but user traffic will not cross the LXC.</p>
+                        </div>
+                        <div class="alert alert-info" role="alert">
+                            <i class="fa-solid fa-route"></i>
+                            <strong>IPv6 forwarding</strong>
+                            <p class="mb-0"><code>net.ipv6.conf.all.forwarding = 1</code> enables IPv6 routing globally. This is required because the LXC forwards the <code>fd51:fbc4:f614::/48</code> path between DN42 peers and the Cisco.</p>
+                        </div>
+                        <div class="alert alert-info" role="alert">
+                            <i class="fa-solid fa-network-wired"></i>
+                            <strong>Default IPv6 behavior</strong>
+                            <p class="mb-0"><code>net.ipv6.conf.default.forwarding = 1</code> applies forwarding to interfaces created later. This matters for WireGuard interfaces because they may appear after sysctl values are loaded.</p>
+                        </div>
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <strong>Reverse path filtering</strong>
+                            <p class="mb-0"><code>rp_filter = 0</code> disables strict IPv4 source validation. DN42 traffic can be asymmetric because BGP may choose different inbound and outbound paths, so strict RPF can drop valid packets.</p>
+                        </div>
+                    </div>
+                    <p>
+                        The gateway also needs an interface toward VLAN 99 with <code>10.255.255.1/30</code>. FRR uses that address as the next-hop when sending IPv4 DN42 routes toward the Cisco.
+                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>WireGuard - RoutedBits Paris</h2>
+                    <p>
+                        <code>peer1</code> is the RoutedBits Paris tunnel. BGP runs over IPv6 link-local addresses, but IPv4 DN42 routes also arrive over this session. The important fix is the point-to-point IPv4 peer statement for <code>172.20.19.79</code>, because FRR requires the IPv4 next-hop to be considered connected.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>[Interface]
+PrivateKey = &lt;wg-private-key-redacted&gt;
+ListenPort = 42420
+Address = fe80::621/64
+PostUp = ip addr replace 10.255.255.1 peer 172.20.19.79/32 dev %i
+MTU = 1420
+Table = off
+PostUp = ip route replace 172.20.19.79/32 dev %i scope link
+PostUp = iptables -P FORWARD ACCEPT
+PostUp = sysctl -w net.ipv4.conf.%i.rp_filter=0 net.ipv6.conf.%i.forwarding=1
+
+[Peer]
+PublicKey = 2eANKa/mvPXwkAFyBcE9YJ6lLxmDTRsUP0C5oyIFMCQ=
+Endpoint = router.par1.routedbits.com:50621
+AllowedIPs = 0.0.0.0/0, ::/0</pre>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>WireGuard - Kioubit FR1</h2>
+                    <p>
+                        <code>kioubit-fr1</code> is the second external DN42 peer. It uses a separate local WireGuard port so it does not conflict with <code>peer1</code>. This peer improved route visibility and made several DN42 services reachable.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>[Interface]
+PrivateKey = &lt;wg-private-key-redacted&gt;
+Address = fe80::621/64
+Address = 192.168.217.35/32
+ListenPort = 42421
+MTU = 1420
+Table = off
+PostUp = sysctl -w net.ipv4.conf.%i.rp_filter=0 net.ipv6.conf.%i.forwarding=1
+
+[Peer]
+PublicKey = sLbzTRr2gfLFb24NPzDOpy8j09Y6zI+a7NkeVMdVSR8=
+Endpoint = fr1.g-load.eu:20036
+AllowedIPs = 0.0.0.0/0, ::/0
+PersistentKeepalive = 25</pre>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>FRRouting configuration</h2>
+                    <p>
+                        FRR terminates all BGP sessions. External neighbors receive only my own DN42 prefixes. The Cisco receives routes with a next-hop it can resolve: <code>10.255.255.1</code>.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>frr version 10.3
+frr defaults traditional
+hostname Dn42
+log syslog informational
+no zebra nexthop kernel enable
+service integrated-vtysh-config
+!
+ip prefix-list XYDRIVE-V4 seq 10 permit 172.22.149.64/27
+ipv6 prefix-list XYDRIVE-V6 seq 10 permit fd51:fbc4:f614::/48
+!
+route-map ALLOW-ALL permit 10
+exit
+!
+route-map FROM-KIOUBIT permit 10
+ set local-preference 150
+exit
+!
+route-map SET-NEXT-HOP permit 10
+ set ip next-hop 10.255.255.1
+exit
+!
+route-map TO-KIOUBIT-V4 permit 10
+ match ip address prefix-list XYDRIVE-V4
+ set ip next-hop 192.168.217.35
+exit
+route-map TO-KIOUBIT-V4 deny 100
+exit
+!
+route-map TO-KIOUBIT-V6 permit 10
+ match ipv6 address prefix-list XYDRIVE-V6
+exit
+route-map TO-KIOUBIT-V6 deny 100
+exit
+!
+route-map TO-ROUTEDBITS-V4 permit 10
+ match ip address prefix-list XYDRIVE-V4
+ set ip next-hop 10.255.255.1
+exit
+route-map TO-ROUTEDBITS-V4 deny 100
+exit
+!
+route-map TO-ROUTEDBITS-V6 permit 10
+ match ipv6 address prefix-list XYDRIVE-V6
+exit
+route-map TO-ROUTEDBITS-V6 deny 100
+exit
+!
+ip route 172.22.149.64/27 10.255.255.2
+ip route 172.20.19.79/32 peer1
+ip route 172.20.53.102/32 kioubit-fr1
+ipv6 route fd51:fbc4:f614::/48 fd51:fbc4:f614:ffff::2</pre>
+                    </div>
+                    <div class="GPGkey">
+                        <pre>router bgp 4242420621
+ bgp router-id 10.255.255.1
+ no bgp network import-check
+ neighbor 10.255.255.2 remote-as 4242420621
+ neighbor 10.255.255.2 description ROUTEUR-CISCO-C1101
+ neighbor fe80::207 remote-as 4242420207
+ neighbor fe80::207 description ROUTEDBITS-PARIS
+ neighbor fe80::207 interface peer1
+ neighbor fe80::ade0 remote-as 4242423914
+ neighbor fe80::ade0 description KIOUBIT-FR1
+ neighbor fe80::ade0 interface kioubit-fr1
+ neighbor fe80::ade0 capability extended-nexthop
+ !
+ address-family ipv4 unicast
+  network 172.22.149.64/27
+  neighbor 10.255.255.2 next-hop-self
+  neighbor 10.255.255.2 soft-reconfiguration inbound
+  neighbor 10.255.255.2 route-map SET-NEXT-HOP out
+  neighbor fe80::207 next-hop-self force
+  neighbor fe80::207 route-map ALLOW-ALL in
+  neighbor fe80::207 route-map TO-ROUTEDBITS-V4 out
+  neighbor fe80::ade0 route-map FROM-KIOUBIT in
+  neighbor fe80::ade0 route-map TO-KIOUBIT-V4 out
+ exit-address-family
+ !
+ address-family ipv6 unicast
+  network fd51:fbc4:f614::/48
+  neighbor 10.255.255.2 activate
+  neighbor fe80::207 activate
+  neighbor fe80::207 next-hop-self force
+  neighbor fe80::207 route-map ALLOW-ALL in
+  neighbor fe80::207 route-map TO-ROUTEDBITS-V6 out
+  neighbor fe80::ade0 activate
+  neighbor fe80::ade0 route-map FROM-KIOUBIT in
+  neighbor fe80::ade0 route-map TO-KIOUBIT-V6 out
+ exit-address-family</pre>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>drive42 LXC on Proxmox</h2>
+                    <p>
+                        <code>drive42</code> is VMID <code>108</code>. It is a Debian 12 unprivileged LXC with its only production interface bridged to <code>vmbr1</code> and tagged into VLAN 10.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>NET0="name=eth0,bridge=vmbr1,tag=10,ip=172.22.149.66/27"
+NET0="${NET0},gw=172.22.149.65"
+NET0="${NET0},ip6=fd51:fbc4:f614:1::42/64"
+NET0="${NET0},gw6=fd51:fbc4:f614:1::1"
+
+pct set 108 --net0 "$NET0"</pre>
+                    </div>
+                    <p>
+                        Inside the container, the expected routes are simple. The Cisco is the default gateway for IPv4 and IPv6.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>eth0: 172.22.149.66/27
+eth0: fd51:fbc4:f614:1::42/64
+default via 172.22.149.65 dev eth0 onlink
+172.22.149.64/27 dev eth0 proto kernel scope link src 172.22.149.66
+default via fd51:fbc4:f614:1::1 dev eth0
+fd51:fbc4:f614:1::/64 dev eth0 proto kernel metric 256</pre>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>drive42 services</h2>
+                    <p>
+                        The service LXC runs Nginx, a PaperMC Minecraft server, Unbound for DN42 DNS tests, and nftables. Minecraft was configured with <code>online-mode=false</code> because the DN42-only service path does not rely on Mojang public Internet authentication.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name drive42;
+
+    root /var/www/drive42;
+    index index.html;
+}</pre>
+                    </div>
+                    <div class="GPGkey">
+                        <pre># /opt/minecraft/server.properties
+server-port=25565
+online-mode=false
+motd=drive42 DN42 Minecraft
+enable-query=false</pre>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>drive42 DNS resolver</h2>
+                    <p>
+                        Unbound listens on the service IPs and forwards <code>dn42.</code> queries to DN42 recursive resolvers. In testing, the local service was correct, but some upstream DN42 DNS resolvers timed out depending on the currently selected BGP path.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>server:
+  interface: 172.22.149.66
+  interface: fd51:fbc4:f614:1::42
+  access-control: 172.22.149.64/27 allow
+  access-control: fd51:fbc4:f614:1::/64 allow
+  do-ip4: yes
+  do-ip6: yes
+  do-udp: yes
+  do-tcp: yes
+  verbosity: 1
+  harden-dnssec-stripped: no
+  domain-insecure: "dn42."
+
+forward-zone:
+  name: "dn42."
+  forward-addr: 172.20.0.53
+  forward-addr: 172.23.0.53
+  forward-addr: fd42:d42:d42:54::1
+  forward-addr: fd42:d42:d42:53::1</pre>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>drive42 firewall</h2>
+                    <p>
+                        The firewall allows SSH for administration, DNS for DN42 resolution tests, HTTP/HTTPS, Minecraft and ICMP. Forwarding is dropped because <code>drive42</code> is not a router.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>table inet filter {
+  chain input {
+    type filter hook input priority 0;
+    policy drop;
+    iif lo accept
+    ct state established,related accept
+    ip protocol icmp accept
+    ip6 nexthdr ipv6-icmp accept
+    tcp dport { 22, 53, 80, 443, 25565 } accept
+    udp dport { 53, 25565 } accept
+  }
+
+  chain forward {
+    type filter hook forward priority 0;
+    policy drop;
+  }
+
+  chain output {
+    type filter hook output priority 0;
+    policy accept;
+  }
+}</pre>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Routing behavior</h2>
+                    <p>
+                        The LXC gateway peers externally over eBGP and internally with the Cisco over iBGP. The external peers only receive <code>172.22.149.64/27</code> and <code>fd51:fbc4:f614::/48</code>. The Cisco receives DN42 routes from the gateway and forwards service traffic to VLAN 10.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>Inbound traffic to 172.22.149.66:
+DN42 remote host
+  -> external AS path
+  -> RoutedBits or Kioubit
+  -> WireGuard tunnel
+  -> LXC Dn42 gateway
+  -> iBGP-learned internal path
+  -> Cisco C1101
+  -> VLAN 10
+  -> drive42
+
+Outbound traffic from drive42:
+drive42
+  -> default gateway 172.22.149.65 / fd51:fbc4:f614:1::1
+  -> Cisco C1101
+  -> route learned from gateway over iBGP
+  -> LXC Dn42 gateway
+  -> selected external WireGuard peer
+  -> DN42</pre>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Validation commands</h2>
+                    <p>
+                        These commands were the useful checks for this design. They validate L2, addressing, BGP state, route installation, service listeners and reachability.
+                    </p>
+                    <div class="GPGkey">
+                        <pre># Cisco
+show vlan brief
+show interfaces trunk
+show interfaces GigabitEthernet0/1/0 switchport
+show interfaces GigabitEthernet0/1/1 switchport
+show ip interface brief
+show ipv6 interface brief
+show bgp ipv4 unicast summary
+show bgp ipv6 unicast summary
+show ip route 172.22.149.64 255.255.255.224
+show ipv6 route FD51:FBC4:F614::/48
+show arp | include 172.22.149.66
+show ipv6 neighbors | include FBC4:F614:1::42</pre>
+                    </div>
+                    <div class="GPGkey">
+                        <pre># DN42 gateway LXC
+wg show
+ip -br addr
+ip route show proto bgp
+ip -6 route show proto bgp
+vtysh -c "show running-config"
+vtysh -c "show bgp ipv4 unicast summary"
+vtysh -c "show bgp ipv6 unicast summary"
+vtysh -c "show bgp nexthop"
+vtysh -c "show ip route bgp"
+vtysh -c "show ipv6 route bgp"</pre>
+                    </div>
+                    <div class="GPGkey">
+                        <pre># Proxmox and drive42
+pct config 108
+pct exec 108 -- ip -br addr
+pct exec 108 -- ip route
+pct exec 108 -- ip -6 route
+pct exec 108 -- ss -lntup
+pct exec 108 -- ping -c 3 172.22.149.65
+pct exec 108 -- ping -6 -c 3 fd51:fbc4:f614:1::1
+pct exec 108 -- curl -4 http://172.22.149.66/
+tcpdump -eni vmbr1 'arp or icmp6'</pre>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Issues and fixes</h2>
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        <div class="col">
+                            <div class="card h-100 p-3">
+                                <h3 class="card-title"><i class="fa-solid fa-route"></i> IPv4 next-hop over WireGuard</h3>
+                                <p class="card-text">RoutedBits sent IPv4 routes over an IPv6 link-local BGP session. FRR rejected the IPv4 next-hop until <code>peer1</code> was made point-to-point toward <code>172.20.19.79</code>.</p>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 p-3">
+                                <h3 class="card-title"><i class="fa-solid fa-filter"></i> BGP policy required</h3>
+                                <p class="card-text">FRR marked received IPv4 routes as policy-rejected until an inbound route-map was applied. The simple <code>ALLOW-ALL</code> route-map made the session explicit.</p>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 p-3">
+                                <h3 class="card-title"><i class="fa-solid fa-ethernet"></i> Missing VLAN tag</h3>
+                                <p class="card-text"><code>drive42</code> originally sent ARP on the wrong VLAN. Adding <code>tag=10</code> to the Proxmox LXC interface placed it correctly behind Cisco <code>Vlan10</code>.</p>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 p-3">
+                                <h3 class="card-title"><i class="fa-solid fa-box"></i> DN42-only package installs</h3>
+                                <p class="card-text">Once <code>drive42</code> was moved to DN42-only networking, normal Debian mirrors were no longer reachable. The fix was to temporarily add a LAN interface for package installation, then remove it.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Related page</h2>
+                    <p>
+                        The project overview and peering information are available on the <a href="dn42.html">DN42 Network Lab</a> page. This page keeps the configuration reference separate from the story of the build.
+                    </p>
+                </section>
+
+            </div>
+        </div>
+    </main>
+    <div class="contacts">
+        <div class="contact-item">
+            <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+        </div>
+        <div class="contact-item">
+            <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+        </div>
+    </div>
+    <footer class="text-center">
+        <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+        </p>
+    </footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>
+
