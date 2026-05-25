@@ -116,9 +116,9 @@
              |                                |
       Proxmox vmbr1 trunk               Cisco access ports
              |                                |
-       drive42 service LXC              Arch laptop
+       drive42 service LXC              laptop
        172.22.149.66                    172.22.149.67</pre>
-                    </div>
+                    </div>Arch 
                 </section>
 
                 <section class="mb-5">
@@ -135,20 +135,17 @@
 6. Export only the prefixes that my AS is allowed to announce</pre>
                     </div>
                     <p>
-                        WireGuard provides the encrypted transport. It does not decide where packets should go inside DN42. BGP does that job. BGP exchanges route information between autonomous systems, selects usable paths and lets each AS announce its own prefixes without using static routes for every DN42 network.
-                    </p>
-                    <p>
-                        The sessions to RoutedBits and Kioubit are eBGP because they connect <code>AS4242420621</code> to different autonomous systems. The session between the LXC gateway and the Cisco is iBGP because both devices are inside my own AS. eBGP is used between networks. iBGP is used inside my network to move the routes learned at the edge toward the internal router.
+                        WireGuard provides the encrypted transport. BGP exchanges the routes. eBGP is used between different autonomous systems, such as RoutedBits and Kioubit. iBGP is used inside my own AS between the LXC gateway and the Cisco.
                     </p>
                 </section>
 
                 <section class="mb-5">
                     <h2>VLAN and bridge design</h2>
                     <p>
-                        The physical link between Proxmox and the Cisco is a trunk. A trunk is an Ethernet link that can carry several VLANs at the same time by adding an 802.1Q VLAN tag to frames. Instead of using one cable for the service LAN and another cable for the BGP interconnect, the same Proxmox-to-Cisco cable transports VLAN 10 and VLAN 99.
+                        The physical link between Proxmox and the Cisco is a trunk. A trunk is an Ethernet link that carries several VLANs at the same time using 802.1Q tags. Instead of using one cable for the service LAN and another for the BGP interconnect, the same Proxmox-to-Cisco cable transports VLAN 10 and VLAN 99.
                     </p>
                     <p>
-                        VLAN 10 carries public DN42 hosts and clients. VLAN 99 carries the routed interconnect between the DN42 gateway LXC and the Cisco. This separation keeps the service network and the routing interconnect clean while still using only one physical cable between the Proxmox host and the Cisco.
+                        VLAN 10 carries public DN42 hosts and clients. VLAN 99 carries the routed interconnect between the DN42 gateway LXC and the Cisco.
                     </p>
                     <div class="GPGkey">
                         <pre>VLAN 10 - LAN-DN42
@@ -197,9 +194,9 @@ iface vmbr1 inet manual
 
 source /etc/network/interfaces.d/*</pre>
                     </div>
-					<p>
-						 In the target design, <code>vmbr1</code> is the Cisco-facing bridge. LXC interfaces are attached to this bridge with the required VLAN tag: <code>tag=10</code> for public DN42 services and <code>tag=99</code> for the BGP interconnect.
-					</p>
+                    <p>
+                        In the target design, <code>vmbr1</code> is the Cisco-facing bridge. LXC interfaces are attached to this bridge with the required VLAN tag: <code>tag=10</code> for public DN42 services and <code>tag=99</code> for the BGP interconnect.
+                    </p>
                 </section>
 
                 <section class="mb-5">
@@ -245,17 +242,14 @@ interface Vlan99
  ipv6 address FD51:FBC4:F614:FFFF::2/64</pre>
                     </div>
                     <p>
-                        Checks : VLAN 10 active on <code>Gi0/1/1</code>, <code>Gi0/1/2</code> and <code>Gi0/1/3</code>, with <code>Gi0/1/0</code> trunking VLANs <code>10,99</code>.
+                        The final checks showed VLAN 10 active on <code>Gi0/1/1</code>, <code>Gi0/1/2</code> and <code>Gi0/1/3</code>, with <code>Gi0/1/0</code> trunking VLANs <code>10,99</code>.
                     </p>
                 </section>
 
                 <section class="mb-5">
                     <h2>Cisco BGP and routing</h2>
                     <p>
-                        BGP is the routing protocol used here because DN42 is a network of autonomous systems. Each participant announces prefixes from its own AS and learns remote prefixes from peers. Static routes would not scale because every new DN42 network would need to be added manually. BGP lets the route table update automatically when peers add, remove or change paths.
-                    </p>
-                    <p>
-                        The Cisco runs inside the same AS as the LXC gateway, so the session toward <code>10.255.255.1</code> is iBGP. The LXC gateway is the edge router that talks to other ASes over eBGP. The Cisco is the internal router that owns VLAN 10 and forwards local service/client traffic. iBGP is used so the Cisco can learn the DN42 routes without building WireGuard tunnels itself.
+                        The Cisco runs inside the same AS as the LXC gateway, so the session toward <code>10.255.255.1</code> is iBGP. The LXC gateway uses <code>next-hop-self</code> and <code>update-source dn42-port</code> so the Cisco receives routes with a reachable next-hop on the VLAN 99 interconnect.
                     </p>
                     <div class="GPGkey">
                         <pre>ip routing
@@ -318,7 +312,7 @@ net.ipv4.conf.default.rp_filter = 0</pre>
                         </div>
                     </div>
                     <p>
-                        The gateway also needs an interface toward VLAN 99 with <code>10.255.255.1/30</code>. FRR uses that address as the next-hop when sending IPv4 DN42 routes toward the Cisco.
+                        The gateway also needs an interface toward VLAN 99 with <code>10.255.255.1/30</code>. With iBGP toward the Cisco, <code>next-hop-self</code> is enough because iBGP would otherwise keep the original external next-hop.
                     </p>
                 </section>
 
@@ -372,7 +366,7 @@ PersistentKeepalive = 25</pre>
                 <section class="mb-5">
                     <h2>FRRouting configuration</h2>
                     <p>
-                        FRR terminates all BGP sessions. External neighbors receive only my own DN42 prefixes. The Cisco receives routes with a next-hop it can resolve: <code>10.255.255.1</code>.
+                        FRR terminates all BGP sessions. External neighbors receive only my own DN42 prefixes through prefix-lists and outbound route-maps. Toward the Cisco, iBGP uses standard <code>next-hop-self</code> with <code>update-source dn42-port</code>. External eBGP peers still use <code>next-hop-self force</code> because they are outside the AS.
                     </p>
                     <div class="GPGkey">
                         <pre>frr version 10.3
@@ -392,13 +386,8 @@ route-map FROM-KIOUBIT permit 10
  set local-preference 150
 exit
 !
-route-map SET-NEXT-HOP permit 10
- set ip next-hop 10.255.255.1
-exit
-!
 route-map TO-KIOUBIT-V4 permit 10
  match ip address prefix-list XYDRIVE-V4
- set ip next-hop 192.168.217.35
 exit
 route-map TO-KIOUBIT-V4 deny 100
 exit
@@ -411,7 +400,6 @@ exit
 !
 route-map TO-ROUTEDBITS-V4 permit 10
  match ip address prefix-list XYDRIVE-V4
- set ip next-hop 10.255.255.1
 exit
 route-map TO-ROUTEDBITS-V4 deny 100
 exit
@@ -433,6 +421,7 @@ ipv6 route fd51:fbc4:f614::/48 fd51:fbc4:f614:ffff::2</pre>
  no bgp network import-check
  neighbor 10.255.255.2 remote-as 4242420621
  neighbor 10.255.255.2 description ROUTEUR-CISCO-C1101
+ neighbor 10.255.255.2 update-source dn42-port
  neighbor fe80::207 remote-as 4242420207
  neighbor fe80::207 description ROUTEDBITS-PARIS
  neighbor fe80::207 interface peer1
@@ -445,10 +434,10 @@ ipv6 route fd51:fbc4:f614::/48 fd51:fbc4:f614:ffff::2</pre>
   network 172.22.149.64/27
   neighbor 10.255.255.2 next-hop-self
   neighbor 10.255.255.2 soft-reconfiguration inbound
-  neighbor 10.255.255.2 route-map SET-NEXT-HOP out
   neighbor fe80::207 next-hop-self force
   neighbor fe80::207 route-map ALLOW-ALL in
   neighbor fe80::207 route-map TO-ROUTEDBITS-V4 out
+  neighbor fe80::ade0 next-hop-self force
   neighbor fe80::ade0 route-map FROM-KIOUBIT in
   neighbor fe80::ade0 route-map TO-KIOUBIT-V4 out
  exit-address-family
@@ -548,7 +537,7 @@ forward-zone:
                 <section class="mb-5">
                     <h2>drive42 firewall</h2>
                     <p>
-                        The firewall allows SSH for administration, DNS for DN42 resolution tests, HTTP/HTTPS, Minecraft and ICMP. Forwarding is dropped because <code>drive42</code> is not a router.
+                        The firewall allows DNS for DN42 resolution tests, HTTP/HTTPS, Minecraft and ICMP. SSH is disabled on this service host and is not opened in the firewall. Forwarding is dropped because <code>drive42</code> is not a router.
                     </p>
                     <div class="GPGkey">
                         <pre>table inet filter {
@@ -559,7 +548,7 @@ forward-zone:
     ct state established,related accept
     ip protocol icmp accept
     ip6 nexthdr ipv6-icmp accept
-    tcp dport { 22, 53, 80, 443, 25565 } accept
+    tcp dport { 53, 80, 443, 25565 } accept
     udp dport { 53, 25565 } accept
   }
 
@@ -618,8 +607,9 @@ show interfaces GigabitEthernet0/1/1 switchport
 show ip interface brief
 show ipv6 interface brief
 show bgp ipv4 unicast summary
-show bgp ipv6 unicast summary
-show ip route 172.22.149.64 255.255.255.224
+show bgp ipv4 unicast neighbors 10.255.255.1 routes
+show bgp ipv4 unicast 172.20.0.53/32
+show ip route bgp
 show ipv6 route FD51:FBC4:F614::/48
 show arp | include 172.22.149.66
 show ipv6 neighbors | include FBC4:F614:1::42</pre>
@@ -630,12 +620,11 @@ wg show
 ip -br addr
 ip route show proto bgp
 ip -6 route show proto bgp
-vtysh -c "show running-config"
 vtysh -c "show bgp ipv4 unicast summary"
-vtysh -c "show bgp ipv6 unicast summary"
-vtysh -c "show bgp nexthop"
-vtysh -c "show ip route bgp"
-vtysh -c "show ipv6 route bgp"</pre>
+vtysh -c "show bgp ipv4 unicast neighbors 10.255.255.2 advertised-routes"
+vtysh -c "show bgp ipv4 unicast neighbors 10.255.255.2 routes"
+vtysh -c "show bgp ipv4 unicast 172.20.0.53/32"
+vtysh -c "show bgp nexthop"</pre>
                     </div>
                     <div class="GPGkey">
                         <pre># Proxmox and drive42
@@ -674,6 +663,12 @@ tcpdump -eni vmbr1 'arp or icmp6'</pre>
                         </div>
                         <div class="col">
                             <div class="card h-100 p-3">
+                                <h3 class="card-title"><i class="fa-solid fa-shuffle"></i> iBGP next-hop cleanup</h3>
+                                <p class="card-text">A temporary static route-map rewriting the next-hop to <code>10.255.255.1</code> was used during debugging. The final setup only needs <code>next-hop-self</code> toward the Cisco, validated with <code>show bgp ipv4 unicast summary</code> and 1127 IPv4 routes received on the Cisco.</p>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 p-3">
                                 <h3 class="card-title"><i class="fa-solid fa-box"></i> DN42-only package installs</h3>
                                 <p class="card-text">Once <code>drive42</code> was moved to DN42-only networking, normal Debian mirrors were no longer reachable. The fix was to temporarily add a LAN interface for package installation, then remove it.</p>
                             </div>
@@ -707,4 +702,3 @@ tcpdump -eni vmbr1 'arp or icmp6'</pre>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
 </body>
 </html>
-

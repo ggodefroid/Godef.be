@@ -48,7 +48,7 @@
           <p>
             A configuration-focused version of this build is available in the <a href="dn42-technical.html">DN42 technical documentation</a>.
           </p>
-	</section>
+        </section>
 
         <section class="mb-5">
           <h2>My DN42 identity</h2>
@@ -121,7 +121,7 @@
 +-- Services - drive42 - 172.22.149.66 - fd51:fbc4:f614:1::42</pre>
           </div>
           <p>
-            Outbound filters are strict: I only announce my own prefixes to external peers. I do not export the whole DN42 table back to a transit peer.
+            Outbound filters are strict: I only announce my own prefixes to external peers. I do not export the whole DN42 table back to a transit peer. That mistake is easy to make when learning BGP, and it creates AS path loops and useless route churn.
           </p>
         </section>
 
@@ -204,7 +204,8 @@
             <div class="col">
               <div class="card h-100 p-3">
                 <h3 class="card-title"><i class="fa-solid fa-shuffle"></i> Next-hop toward Cisco</h3>
-                <p class="card-text">Routes sent to the Cisco needed a next-hop that the Cisco could actually reach. For IPv4, I rewrote the next-hop to <code>10.255.255.1</code> when exporting routes toward the Cisco.</p>
+                <p class="card-text">The final iBGP setup uses <code>next-hop-self</code> and <code>update-source dn42-port</code> toward the Cisco. In iBGP, routes learned from external peers keep their original next-hop by default, so <code>next-hop-self</code> rewrites it to the LXC interconnect address <code>10.255.255.1</code>.</p>
+                <p class="card-text">A temporary static route-map was tried during debugging, but it was removed. The working check is <code>show bgp ipv4 unicast neighbors 10.255.255.1 routes</code> on the Cisco: the Cisco receives 1127 IPv4 routes from the LXC gateway.</p>
               </div>
             </div>
             <div class="col">
@@ -252,10 +253,10 @@ drive42 - web and Minecraft</pre>
         <section class="mb-5">
           <h2>Using DN42 from my laptop</h2>
           <p>
-            I also wanted to test to have a ip from my own network on my laptop and maybe connect to some services that people put on their DN42 network. I plugged my laptop into <code>GigabitEthernet0/1/1</code> on the Cisco. That port is an access port in VLAN 10, so the laptop does not need to tag VLANs. It just gets a DN42 address from my prefix.
+            I also wanted DN42 to feel like a real network from my laptop. I plugged my Arch laptop into <code>GigabitEthernet0/1/1</code> on the Cisco. That port is an access port in VLAN 10, so the laptop does not need to tag VLANs. It just gets a DN42 address from my prefix.
           </p>
           <div class="GPGkey">
-            <pre>Interface: enp0s31f6
+            <pre>Arch interface: enp0s31f6
 IPv4: 172.22.149.67/27
 IPv6: fd51:fbc4:f614:1::67/64
 Gateway IPv4: 172.22.149.65
@@ -263,7 +264,7 @@ Gateway IPv6: fd51:fbc4:f614:1::1
 DN42 DNS resolver: 172.22.149.66</pre>
           </div>
           <p>
-            I mistakly put all the <code>10.0.0.0/8</code> through DN42 from the laptop and it conflicts with private networks. I already use at home. For now I keep targeted routes and avoid breaking access to local machines.
+            I do not route all <code>10.0.0.0/8</code> through DN42 from the laptop because it conflicts with private networks I already use at home. For now I keep targeted routes and avoid breaking access to local machines.
           </p>
         </section>
 
@@ -345,4 +346,3 @@ Contact: germain@godef.be</pre>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
 </body>
 </html>
-
