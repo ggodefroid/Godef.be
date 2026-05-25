@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>DN42 - godef.be</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+  <link href="styles/main.css" rel="stylesheet" type="text/css">
+  <link rel="icon" type="image/png" sizes="32x32" href="images/xd.svg">
+</head>
+<body>
+
+<div id="main-menu" class="p-2">
+  <img src="images/profil.png" alt="logo" id="logoProfil">
+  <hr>
+  <ul class="nav nav-pills flex-column">
+    <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+    <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+    <li class="nav-item"><a class="nav-link" target="_blank" href="https://rss.godef.be"><i class="fa-solid fa-info"></i>Rss</a></li>
+    <li class="nav-item"><a class="nav-link active" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+    <li class="nav-item"><a class="nav-link" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+  </ul>
+</div>
+
+<div class="p-2">
+  <header>
+    <h1>
+      <strong>DN42 Network Lab</strong>
+    </h1>
+  </header>
+  <div id="foxo"></div>
+  <main>
+    <div class="projet">
+      <div class="haut-de-page">
+
+        <section class="mb-5">
+          <h2>What this project is</h2>
+          <p>
+            DN42 is a community network built by people who want to experiment with real routing, tunnels, BGP, DNS, addressing, peering and network operations without needing public Internet resources. It behaves like a small Internet made of private links between autonomous systems. Each participant gets an ASN, announces prefixes, builds tunnels with peers, filters routes, runs services and learns how routing behaves when the network is not hidden behind a single home router.
+          </p>
+          <p>
+            My goal was to join DN42 with my own ASN, expose services from my lab, route DN42 traffic through a real Cisco router, and make the setup usable from a laptop plugged directly into the DN42 VLAN. The result is a small but real network edge: WireGuard tunnels, FRR on Linux, a Cisco C1101, Proxmox LXC containers, public DN42 services and direct access to other DN42 networks.
+          </p>
+        </section>
+
+        <section class="mb-5">
+          <h2>My DN42 identity</h2>
+          <div class="row row-cols-1 row-cols-md-2 g-4">
+            <div class="col">
+              <div class="card h-100 p-3">
+                <h3 class="card-title"><i class="fa-solid fa-id-card"></i> Registry</h3>
+                <p class="card-text">ASN: <code>AS4242420621</code></p>
+                <p class="card-text">Maintainer: <code>XYDRIVE-MNT</code></p>
+                <p class="card-text">IPv4 prefix: <code>172.22.149.64/27</code></p>
+                <p class="card-text">IPv6 prefix: <code>fd51:fbc4:f614::/48</code></p>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card h-100 p-3">
+                <h3 class="card-title"><i class="fa-solid fa-satellite-dish"></i> Services</h3>
+                <p class="card-text">DN42 web service: <code>http://172.22.149.66/</code></p>
+                <p class="card-text">Minecraft server: <code>172.22.149.66:25565</code></p>
+                <p class="card-text">Contact: <a href="mailto:germain@godef.be">germain@godef.be</a></p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-5">
+          <h2>Topology overview</h2>
+          <p>
+            The design is split into three jobs. The LXC named <code>Dn42</code> handles WireGuard and BGP sessions. The Cisco C1101 is the internal DN42 router for my lab. Proxmox hosts the service containers, including <code>drive42</code>, which has a real DN42 address on VLAN 10.
+          </p>
+          <div class="GPGkey">
+            <pre>RoutedBits Paris AS4242420207      Kioubit FR1 AS4242423914
+              |                                  |
+              | WireGuard + eBGP                 | WireGuard + eBGP
+              |                                  |
+        +-----+----------------------------------+-----+
+        |              LXC Dn42 Gateway                |
+        |              FRR + WireGuard                 |
+        +---------------------+------------------------+
+                              |
+                              | iBGP / VLAN 99
+                              | 10.255.255.0/30
+                              |
+                        Cisco C1101
+                              |
+                              | VLAN 10 - DN42 services
+                              |
+                 +------------+-------------+
+                 |                          |
+          Proxmox vmbr1 tag 10         Arch laptop
+                 |
+              drive42
+        172.22.149.66 / fd51:fbc4:f614:1::42</pre>
+          </div>
+        </section>
+
+        <section class="mb-5">
+          <h2>BGP view</h2>
+          <p>
+            My AS is <code>AS4242420621</code>. Inside the lab, the Cisco and the LXC share the same AS with iBGP. Outside the lab, the LXC peers with external DN42 networks over eBGP. The two external peers currently used are RoutedBits in Paris and Kioubit in France.
+          </p>
+          <div class="GPGkey">
+            <pre>AS4242420621 - XYDRIVE
+|
+|-- eBGP - RoutedBits Paris - AS4242420207 - fe80::207 over peer1
+|
+|-- eBGP - Kioubit FR1 - AS4242423914 - fe80::ade0 over kioubit-fr1
+|
+|-- iBGP - Cisco C1101 - AS4242420621 - 10.255.255.2
+|
++-- Services - drive42 - 172.22.149.66 - fd51:fbc4:f614:1::42</pre>
+          </div>
+          <p>
+            Outbound filters are strict: I only announce my own prefixes to external peers. I do not export the whole DN42 table back to a transit peer.
+          </p>
+        </section>
+
+        <section class="mb-5">
+          <h2>Machines involved</h2>
+          <div class="row row-cols-1 row-cols-md-2 g-4">
+            <div class="col">
+              <div class="card h-100 p-3">
+                <h3 class="card-title"><i class="fa-solid fa-network-wired"></i> Cisco C1101</h3>
+                <p class="card-text">The Cisco is the router I use for the local DN42 network. It receives the global DN42 table from the LXC over iBGP and routes VLAN 10 for real clients and services.</p>
+                <p class="card-text"><code>Vlan10</code>: <code>172.22.149.65/27</code> and <code>fd51:fbc4:f614:1::1/64</code></p>
+                <p class="card-text"><code>Vlan99</code>: <code>10.255.255.2/30</code> and <code>fd51:fbc4:f614:ffff::2/64</code></p>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card h-100 p-3">
+                <h3 class="card-title"><i class="fa-solid fa-box"></i> LXC Dn42 gateway</h3>
+                <p class="card-text">This container runs WireGuard and FRR. It terminates tunnels, receives routes from DN42 peers, applies route-maps, installs routes into Linux, and sends the table to the Cisco.</p>
+                <p class="card-text"><code>dn42-port</code>: <code>10.255.255.1/30</code></p>
+                <p class="card-text"><code>peer1</code>: RoutedBits Paris</p>
+                <p class="card-text"><code>kioubit-fr1</code>: Kioubit FR1</p>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card h-100 p-3">
+                <h3 class="card-title"><i class="fa-solid fa-server"></i> Proxmox</h3>
+                <p class="card-text">Proxmox is not routing DN42 for this part. It acts as a bridge host. The USB network interface connected to the Cisco is attached to <code>vmbr1</code>, and LXC interfaces can be tagged into VLAN 10 or VLAN 99.</p>
+                <p class="card-text"><code>vmbr1</code>: Cisco trunk side</p>
+                <p class="card-text"><code>vmbr1 tag 10</code>: public DN42 service network</p>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card h-100 p-3">
+                <h3 class="card-title"><i class="fa-solid fa-cube"></i> drive42</h3>
+                <p class="card-text">This is the public service container. It hosts a web page, a Minecraft server and a local DNS resolver used by my laptop while exploring DN42.</p>
+                <p class="card-text"><code>172.22.149.66/27</code></p>
+                <p class="card-text"><code>fd51:fbc4:f614:1::42/64</code></p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-5">
+          <h2>Build steps</h2>
+          <p>
+            The first step was to register resources in the DN42 registry: an ASN, an IPv4 block, an IPv6 block, route objects and maintainer data. Without correct route objects, many serious DN42 peers filter the route because their ROA validation cannot confirm that the ASN is allowed to originate the prefix.
+          </p>
+          <p>
+            Then I built the gateway container. The LXC runs Debian, WireGuard and FRR. I connected it to the Cisco using a dedicated Proxmox bridge and a small point-to-point IPv4 network: <code>10.255.255.0/30</code>. The Cisco is <code>10.255.255.2</code>, and the LXC is <code>10.255.255.1</code>.
+          </p>
+          <p>
+            The first external tunnel was RoutedBits Paris. It uses WireGuard with IPv6 link-local BGP. The second peer is Kioubit FR1. Adding Kioubit improved reachability and made it possible to reach <code>mc.jerry.dn42</code>, which resolves to <code>172.20.51.102</code> and listens on port <code>25565</code>.
+          </p>
+          <div class="GPGkey">
+            <pre>1. Register AS4242420621 and prefixes in the DN42 registry
+2. Build the Dn42 LXC gateway with WireGuard and FRR
+3. Connect Cisco C1101 to the LXC over 10.255.255.0/30
+4. Establish eBGP to RoutedBits Paris
+5. Send global DN42 routes to the Cisco with iBGP
+6. Attach Proxmox vmbr1 to the Cisco trunk
+7. Put drive42 on VLAN 10 with a public DN42 address
+8. Plug an Arch laptop into a Cisco access port in VLAN 10
+9. Add Kioubit as a second peer for better reachability</pre>
+          </div>
+        </section>
+
+        <section class="mb-5">
+          <h2>Problems I hit</h2>
+          <p>
+            The hardest part was not making a tunnel come up. The hard part was making the Linux kernel, FRR, Cisco and remote BGP peers agree on what the next-hop should be.
+          </p>
+          <div class="row row-cols-1 row-cols-md-2 g-4">
+            <div class="col">
+              <div class="card h-100 p-3">
+                <h3 class="card-title"><i class="fa-solid fa-route"></i> IPv4 over an IPv6 tunnel</h3>
+                <p class="card-text">The RoutedBits session uses IPv6 link-local BGP while carrying IPv4 routes. The IPv4 next-hop received from Paris was not directly usable by Linux until the WireGuard interface was treated like a point-to-point link.</p>
+                <p class="card-text">The fix was to explicitly bind the local tunnel address to the remote next-hop and keep a route for the remote tunnel IPv4 address.</p>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card h-100 p-3">
+                <h3 class="card-title"><i class="fa-solid fa-shuffle"></i> Next-hop toward Cisco</h3>
+                <p class="card-text">Routes sent to the Cisco needed a next-hop that the Cisco could actually reach. For IPv4, I rewrote the next-hop to <code>10.255.255.1</code> when exporting routes toward the Cisco.</p>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card h-100 p-3">
+                <h3 class="card-title"><i class="fa-solid fa-filter"></i> Route filtering</h3>
+                <p class="card-text">At one point I was close to advertising too much back to a transit peer. The final setup uses prefix-lists and route-maps so external peers only receive <code>172.22.149.64/27</code> and <code>fd51:fbc4:f614::/48</code>.</p>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card h-100 p-3">
+                <h3 class="card-title"><i class="fa-solid fa-lock"></i> Kernel forwarding</h3>
+                <p class="card-text">Forwarding must be enabled, and reverse path filtering must be disabled on the DN42 interfaces. Otherwise valid routed traffic can be dropped before BGP even becomes the problem.</p>
+                <p class="card-text"><code>ip_forward=1</code> and <code>rp_filter=0</code> are part of the base configuration.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-5">
+          <h2>Traffic path</h2>
+          <p>
+            When someone visits my DN42 website or connects to my Minecraft server, the traffic reaches me through one of my BGP peers, enters the LXC gateway, crosses the Cisco, and lands on the public service VLAN.
+          </p>
+          <div class="GPGkey">
+            <pre>DN42 user
+  |
+  | BGP path to AS4242420621
+  |
+RoutedBits or Kioubit
+  |
+  | WireGuard tunnel
+  |
+LXC Dn42 gateway
+  |
+  | iBGP route and Linux forwarding
+  |
+Cisco C1101
+  |
+  | VLAN 10
+  |
+drive42 - web and Minecraft</pre>
+          </div>
+        </section>
+
+        <section class="mb-5">
+          <h2>Using DN42 from my laptop</h2>
+          <p>
+            I also wanted to test to have a ip from my own network on my laptop and maybe connect to some services that people put on their DN42 network. I plugged my laptop into <code>GigabitEthernet0/1/1</code> on the Cisco. That port is an access port in VLAN 10, so the laptop does not need to tag VLANs. It just gets a DN42 address from my prefix.
+          </p>
+          <div class="GPGkey">
+            <pre>Interface: enp0s31f6
+IPv4: 172.22.149.67/27
+IPv6: fd51:fbc4:f614:1::67/64
+Gateway IPv4: 172.22.149.65
+Gateway IPv6: fd51:fbc4:f614:1::1
+DN42 DNS resolver: 172.22.149.66</pre>
+          </div>
+          <p>
+            I mistakly put all the <code>10.0.0.0/8</code> through DN42 from the laptop and it conflicts with private networks. I already use at home. For now I keep targeted routes and avoid breaking access to local machines.
+          </p>
+        </section>
+
+        <section class="mb-5">
+          <h2>Current peers</h2>
+          <div class="row row-cols-1 row-cols-md-2 g-4">
+            <div class="col">
+              <div class="card h-100 p-3">
+                <h3 class="card-title"><i class="fa-solid fa-tower-broadcast"></i> RoutedBits Paris</h3>
+                <p class="card-text">AS: <code>AS4242420207</code></p>
+                <p class="card-text">Endpoint: <code>router.par1.routedbits.com:50621</code></p>
+                <p class="card-text">BGP neighbor: <code>fe80::207</code></p>
+                <p class="card-text">Role: first transit peer and main route source during the initial build.</p>
+              </div>
+            </div>
+            <div class="col">
+              <div class="card h-100 p-3">
+                <h3 class="card-title"><i class="fa-solid fa-tower-cell"></i> Kioubit FR1</h3>
+                <p class="card-text">AS: <code>AS4242423914</code></p>
+                <p class="card-text">Endpoint: <code>fr1.g-load.eu:20036</code></p>
+                <p class="card-text">BGP neighbor: <code>fe80::ade0</code></p>
+                <p class="card-text">Role: second peer used to improve service reachability and reach <code>mc.jerry.dn42</code>.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="mb-5">
+          <h2>Peering with me</h2>
+          <p>
+            I am interested in peering with other DN42 operators. I prefer WireGuard tunnels with MP-BGP over IPv6 link-local and extended next-hop enabled. If you want to peer, send me your ASN, WireGuard endpoint, WireGuard public key, link-local address, location and preferred policy.
+          </p>
+          <div class="GPGkey">
+            <pre>ASN: AS4242420621
+Maintainer: XYDRIVE-MNT
+IPv4 announced: 172.22.149.64/27
+IPv6 announced: fd51:fbc4:f614::/48
+Preferred BGP: MP-BGP over IPv6 link-local
+Extended next-hop: yes
+Example local link-local: fe80::621
+Contact: germain@godef.be</pre>
+          </div>
+          <p>
+            I will only announce my own prefixes to peers. I expect the same kind of clean filtering on the other side. This keeps the network readable, avoids accidental transit leaks, and makes debugging much less painful.
+          </p>
+        </section>
+
+        <section class="mb-5">
+          <h2>What works now</h2>
+          <ul>
+            <li><i class="fa-solid fa-check"></i> My Cisco receives the DN42 IPv4 and IPv6 tables.</li>
+            <li><i class="fa-solid fa-check"></i> My public service container <code>drive42</code> is reachable on VLAN 10.</li>
+            <li><i class="fa-solid fa-check"></i> The DN42 web page answers on <code>172.22.149.66</code>.</li>
+            <li><i class="fa-solid fa-check"></i> The Minecraft server listens on <code>172.22.149.66:25565</code>.</li>
+            <li><i class="fa-solid fa-check"></i> My Arch laptop can be plugged directly into the Cisco and use a DN42 address.</li>
+            <li><i class="fa-solid fa-check"></i> With Kioubit, <code>mc.jerry.dn42</code> resolves to <code>172.20.51.102</code> and the Minecraft port is reachable.</li>
+          </ul>
+          <p>
+            This project is not finished. DN42 is exactly the kind of network where the next problem is usually one route-map away. That is also why I like it.
+          </p>
+        </section>
+
+      </div>
+    </div>
+  </main>
+  <div class="contacts">
+    <div class="contact-item">
+      <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+    </div>
+    <div class="contact-item">
+      <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+    </div>
+  </div>
+  <footer class="text-center">
+    <p> © Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+    </p>
+  </footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+</body>
+</html>
+
