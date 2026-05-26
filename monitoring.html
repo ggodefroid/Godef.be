@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Homelab Monitoring and Alerting Stack - godef.be</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/fontawesome.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/brands.min.css" rel="stylesheet" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.1/css/solid.min.css" rel="stylesheet" crossorigin="anonymous">
+
+    <link href="styles/main.css" rel="stylesheet" type="text/css">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/xd.svg">
+
+    <style>
+        .shell-block{position:relative;background:#181d27;border:1px solid #2d3546;border-radius:6px;padding:12px;margin-bottom:1rem;cursor:pointer;font-family:"Courier New",monospace;color:#c7c7c7;overflow:auto}
+        .shell-block:hover{background:#1f2532}
+        .shell-block::after{content:"Click to copy";position:absolute;top:6px;right:10px;font-size:.75em;color:#aaa;transition:opacity .2s}
+        .shell-block.copied::after{content:"Copied!";color:#4caf50}
+        section:not(:last-of-type){border-bottom:1px solid #374151;padding-bottom:2rem;margin-bottom:3rem}
+    </style>
+</head>
+<body>
+
+<div id="main-menu" class="p-2">
+    <img src="images/profil.png" alt="logo" id="logoProfil">
+    <hr>
+    <ul class="nav nav-pills flex-column">
+        <li class="nav-item"><a class="nav-link" href="index.html"><i class="fa-solid fa-house"></i>Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="GPG.html"><i class="fa-solid fa-key"></i>GPG Key</a></li>
+        <li class="nav-item"><a class="nav-link" target="_blank" href="https://rss.godef.be"><i class="fa-solid fa-info"></i>Rss</a></li>
+        <li class="nav-item"><a class="nav-link" href="projet.html"><i class="fa-solid fa-list-check"></i>Project</a></li>
+        <li class="nav-item"><a class="nav-link active" href="documentation.html"><i class="fa-solid fa-book"></i>Documentation</a></li>
+    </ul>
+</div>
+
+<div class="p-2">
+    <header>
+        <h1>
+            <strong>Homelab Monitoring and Alerting Stack</strong>
+        </h1>
+    </header>
+    <div id="foxo"></div>
+    <main>
+        <div class="projet">
+            <div class="haut-de-page">
+
+                <section class="mb-5">
+                    <h2>Scope</h2>
+                    <p>
+                        This page documents the monitoring and alerting stack I run on my Proxmox homelab: design choices, architecture, log sources, and how alerts move from collection to notification. It focuses on how the system is built and operated, not on reproducing every config file line by line.
+                    </p>
+                    <p>
+                        Passwords, webhook URLs, internal LAN maps, container IDs, and full configuration files are intentionally omitted or replaced by placeholders. Examples use fictional hostnames (<code>git.example.com</code>, <code>edge-waf-01</code>) and documentation-only addressing (<code>10.0.10.0/24</code>, <code>203.0.113.50</code>). Nothing there describes my live infrastructure.
+                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Why not Wazuh</h2>
+                    <p>
+                        I evaluated Wazuh as a full SIEM and chose to build something lighter instead. The reasons are practical, not ideological:
+                    </p>
+                    <ul>
+                        <li><strong>Resource cost:</strong> Wazuh is heavy for a single-operator homelab. Indexer, manager, and agents add ongoing CPU, RAM, and disk overhead I did not need.</li>
+                        <li><strong>CVE correlation:</strong> I do not rely on built-in vulnerability scanning in this stack. Patch management and service updates are handled separately.</li>
+                        <li><strong>Rule fit:</strong> Default Wazuh rules target generic enterprise patterns. My environment is Proxmox LXCs, Docker apps... and most default alerts would be noise.</li>
+                        <li><strong>Custom work anyway:</strong> Useful alerting still required writing or tuning rules. If I am going to maintain rules by hand, I prefer a pipeline where every alert has a clear, homelab-specific purpose.</li>
+                    </ul>
+                    <p class="mb-0">
+                        The result is a smaller stack: Fluent Bit agents, OpenSearch for storage and search, ElastAlert2 for rule evaluation, and Discord for notifications. Less platform, more signal.
+                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Design principles</h2>
+                    <ul>
+                        <li><strong>Collect once, query everywhere:</strong> all nodes ship logs to one OpenSearch cluster.</li>
+                        <li><strong>Actionable alerts only:</strong> SSH access, WAF blocks on public vhosts, reverse shell indicators, unauthorized proxies, stack health... not every log line.</li>
+                        <li><strong>Edge-first security:</strong> internet-exposed services sit behind nginx, ModSecurity (OWASP CRS), and fail2ban. Those logs feed the same pipeline.</li>
+                        <li><strong>Lightweight agents:</strong> Fluent Bit on the hypervisor and on each monitored LXC. No heavy agent framework.</li>
+                        <li><strong>Meta-monitoring:</strong> a watchdog timer verifies OpenSearch, ElastAlert2, and Fluent Bit itself, so the monitoring stack cannot fail silently.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Architecture</h2>
+                    <p>
+                        Public HTTP(S) traffic hits an edge reverse proxy with a WAF. Application workloads run on separate LXCs (Docker or systemd). Every monitored node runs Fluent Bit and forwards enriched events to a central OpenSearch instance. ElastAlert2 polls OpenSearch and triggers a custom Discord alerter when rules match.
+                    </p>
+                    <div class="GPGkey">
+                        <pre>Internet (203.0.113.50)
+        |
+        v
++------------------+
+| edge-waf-01      |  nginx + ModSecurity + fail2ban
+| (public vhosts)  |
++--------+---------+
+         | reverse proxy
+         v
++------------------+
+| app-node-01      |  Docker / systemd (Forgejo-like apps)
+| app-node-02      |  other self-hosted services
++------------------+
+
+Proxmox host + monitored LXCs
+        |
+        |  Fluent Bit (journald, docker, nginx/modsec, audit)
+        v
++------------------+
+| monitoring-core  |  OpenSearch + Dashboards (Docker)
++--------+---------+
+         |
+         +--- OpenSearch Dashboards  (search / Discover)
+         |
+         +--- ElastAlert2             (YAML rules, realert throttling)
+         |         |
+         |         v
+         |    Discord alerter         (REDACTED webhook)
+         |
+         +--- watchdog timer          (stack health alerts)
+
+Separate: pve-notifier on hypervisor -> Telegram (Proxmox login events)</pre>
+                    </div>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Stack components</h2>
+                    <div class="row row-cols-1 row-cols-md-2 g-4">
+                        <div class="col">
+                            <div class="card h-100 p-3">
+                                <h3 class="card-title"><i class="fa-solid fa-stream"></i> Fluent Bit</h3>
+                                <p class="card-text">Runs on the Proxmox host and on each monitored LXC. Tails journald, Docker json logs, nginx and ModSecurity files on edge nodes, and audit events where available. Lua filters add readable <code>summary</code> fields, <code>event_type</code>, and security tags such as <code>web_exploit_event</code> or <code>reverse_shell_event</code>.</p>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 p-3">
+                                <h3 class="card-title"><i class="fa-solid fa-database"></i> OpenSearch + Dashboards</h3>
+                                <p class="card-text">Central log store on <code>monitoring-core</code>. Daily indices (<code>logs-YYYY.MM.DD</code>), authenticated API, and a saved Discover view for day-to-day investigation. Grafana on the same node handles metrics - logs and metrics stay separate by design.</p>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 p-3">
+                                <h3 class="card-title"><i class="fa-solid fa-bell"></i> ElastAlert2</h3>
+                                <p class="card-text">Evaluates YAML rules every minute against OpenSearch. Supports <code>any</code>, <code>frequency</code>, and throttling via <code>realert</code>. Severity is encoded in the rule title (for example <code>[critical]</code>, <code>[high]</code>) and parsed by the alerter script.</p>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card h-100 p-3">
+                                <h3 class="card-title"><i class="fa-brands fa-discord"></i> Discord alerter</h3>
+                                <p class="card-text">Small Python script invoked by ElastAlert2. Builds a colored embed (host, severity, summary, timestamp) and a link back to OpenSearch Dashboards filtered on the document id. Webhook URL is stored only on the server - never published.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="mt-4 mb-0">
+                        <strong>Complementary control-plane alert:</strong>
+                        <a href="https://github.com/ggodefroid/pve-notifier" target="_blank" rel="noopener noreferrer">pve-notifier</a>
+                        tails Proxmox login events and pushes Telegram notifications. It predates this logstack and still covers hypervisor access independently.
+                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>What gets collected</h2>
+                    <ul>
+                        <li><strong>Edge / internet-facing:</strong> nginx access and error logs, ModSecurity audit lines (blocks and high-score anomalies), fail2ban ban events.</li>
+                        <li><strong>Identity / access:</strong> SSH accepted and failed logins via systemd journal on all monitored nodes.</li>
+                        <li><strong>Applications:</strong> Docker stdout/stderr on app LXCs (Forgejo, RSS reader, paste bin, media server, and similar).</li>
+                        <li><strong>Host security:</strong> auditd on the Proxmox hypervisor (exec of suspicious binaries, sudo, critical file writes). Limited inside unprivileged LXCs.</li>
+                        <li><strong>Custom detections (Lua):</strong> unauthorized reverse proxy or tunnel startup, WAF exploit tagging, reverse shell pattern matching in audit and Docker logs.</li>
+                        <li><strong>Environment-specific:</strong> optional inputs for routing daemons or game servers on dedicated nodes - same pipeline, different rules.</li>
+                    </ul>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Alert categories</h2>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Example trigger</th>
+                                    <th>Severity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Access</td>
+                                    <td>SSH login success</td>
+                                    <td>critical</td>
+                                </tr>
+                                <tr>
+                                    <td>Access</td>
+                                    <td>SSH brute force (5 failures / 5 min)</td>
+                                    <td>high</td>
+                                </tr>
+                                <tr>
+                                    <td>Web security</td>
+                                    <td>WAF blocks RCE or injection on public vhosts</td>
+                                    <td>high</td>
+                                </tr>
+                                <tr>
+                                    <td>Compromise</td>
+                                    <td>Reverse shell pattern on an app node</td>
+                                    <td>critical</td>
+                                </tr>
+                                <tr>
+                                    <td>Posture</td>
+                                    <td>Unauthorized reverse proxy or tunnel binary</td>
+                                    <td>high</td>
+                                </tr>
+                                <tr>
+                                    <td>Operations</td>
+                                    <td>Monitoring stack component down (watchdog)</td>
+                                    <td>critical</td>
+                                </tr>
+                                <tr>
+                                    <td>Informational</td>
+                                    <td>Game server player join (optional rule)</td>
+                                    <td>info</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="mb-0">
+                        Rules are YAML files deployed alongside ElastAlert2. Each rule defines a query, optional grouping (<code>query_key</code>), and minimum time between repeat alerts (<code>realert</code>).
+                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Example alert walkthrough</h2>
+                    <p>
+                        The scenarios below are fictional but structurally identical to how real events flow through the stack. Hostnames, IPs, and URIs are placeholders.
+                    </p>
+
+                    <h3 class="h5 mt-4">Scenario A - exploit blocked at the edge (high)</h3>
+                    <ol>
+                        <li>Client <code>198.51.100.42</code> sends <code>POST /api/exec</code> with shell metacharacters to <code>git.example.com</code> (hosted behind <code>edge-waf-01</code>).</li>
+                        <li>nginx forwards the request to ModSecurity with OWASP CRS. Rule <code>932160</code> (remote command execution family) matches. ModSecurity returns HTTP 403.</li>
+                        <li>A single-line ModSecurity audit entry is appended to the local audit log on <code>edge-waf-01</code>.</li>
+                        <li>Fluent Bit tails that file. A Lua filter parses the rule id and sets <code>web_exploit_event: true</code>, <code>internet_facing: true</code>, and a human-readable <code>summary</code>.</li>
+                        <li>The event is indexed in OpenSearch on <code>monitoring-core</code> within seconds.</li>
+                        <li>ElastAlert2 rule <code>web_exploit_blocked</code> matches on the next evaluation cycle (about one minute).</li>
+                        <li>The Discord alerter posts an embed: severity HIGH, host <code>edge-waf-01</code>, summary text, and a Discover link filtered on the document id.</li>
+                    </ol>
+
+                    <p>Sample log line (redacted):</p>
+                    <div class="shell-block"><pre><code>ModSecurity: Access denied with code 403 (phase 2). [id "932160"] [msg "Remote Command Execution: Unix Shell Code Found"] [hostname "git.example.com"] [uri "/api/exec"] [unique_id "REDACTED"]</code></pre></div>
+
+                    <p>Matching ElastAlert2 rule excerpt:</p>
+                    <div class="shell-block"><pre><code>name: Web Exploit Blocked
+type: any
+index: logs-*
+filter:
+  - query:
+      query_string:
+        query: 'web_exploit_event:true AND internet_facing:true'
+realert:
+  minutes: 10
+alert:
+  - command
+command: ["/opt/elastalert/discord_alert.py", "Web Exploit Blocked [high]", "{host}", "{ctid}", "{summary}", "{@timestamp}", "{_id}"]</code></pre></div>
+
+                    <h3 class="h5 mt-4">Scenario B - post-exploitation signal (critical)</h3>
+                    <p>
+                        If a payload bypassed the WAF or reached an application backend directly (for example via an unsegmented internal path), a successful compromise might show up as execution patterns rather than a blocked HTTP request:
+                    </p>
+                    <ul>
+                        <li>Audit or Docker logs on <code>app-node-01</code> contain strings such as <code>/dev/tcp/</code>, <code>bash -i</code>, or <code>nc -e</code>.</li>
+                        <li>Lua tagging sets <code>reverse_shell_event: true</code>.</li>
+                        <li>ElastAlert2 rule <code>reverse_shell_detected</code> fires at <strong>critical</strong> severity.</li>
+                    </ul>
+                    <p class="mb-0">
+                        Scenario A is prevention at the edge. Scenario B is detection after access. Both are needed because no WAF is perfect and not all traffic necessarily passes through the edge.
+                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Configuration excerpts</h2>
+                    <p>
+                        Full configs live on the hypervisor and are not published. The snippets below show shape only.
+                    </p>
+
+                    <p>Fluent Bit output (credentials via environment file on each node):</p>
+                    <div class="shell-block"><pre><code>[OUTPUT]
+    Name                  opensearch
+    Match                 *
+    Host                  monitoring-core.internal
+    Port                  9200
+    HTTP_User             ${OPENSEARCH_USER}
+    HTTP_Passwd           REDACTED
+    Logstash_Format       On
+    Logstash_Prefix       logs</code></pre></div>
+
+                    <p>Audit rule example (hypervisor):</p>
+                    <div class="shell-block"><pre><code>-a always,exit -F arch=b64 -S execve -F path=/usr/bin/nc -k suspicious_binaries</code></pre></div>
+
+                    <p>Lua tagging concept (web exploit):</p>
+                    <div class="shell-block"><pre><code>-- On ModSecurity "Access denied" + RCE rule id prefix 932/933/934:
+record["web_exploit_event"] = "true"
+record["internet_facing"] = "true"
+record["summary"] = "Exploit blocked WAF rule=" .. rule_id .. " uri=" .. uri</code></pre></div>
+
+                    <p class="mb-0">
+                        OpenSearch requires authentication. Dashboards, ElastAlert2, Fluent Bit, and the watchdog all read credentials from a root-only env file on the server (<code>chmod 600</code>).
+                    </p>
+                </section>
+
+                <section class="mb-5">
+                    <h2>Trade-offs and limits</h2>
+                    <ul>
+                        <li><strong>auditd in LXCs:</strong> unprivileged containers often cannot load audit rules reliably. Shell detection is strongest on the hypervisor and via Docker logs on app nodes.</li>
+                        <li><strong>WAF coverage:</strong> ModSecurity only sees traffic that passes through the edge proxy. Backends reachable without the WAF are a separate hardening topic.</li>
+                        <li><strong>Rule maintenance:</strong> custom YAML and Lua require ongoing care. That is intentional - I prefer explicit rules over opaque defaults.</li>
+                        <li><strong>Alert channel:</strong> Discord is for operational notification, not incident ticketing or long-term retention.</li>
+                    </ul>
+                </section>
+
+            </div>
+        </div>
+    </main>
+    <div class="contacts">
+        <div class="contact-item">
+            <i class="fa-solid fa-envelope"></i><a href="mailto:germain@godef.be">germain@godef.be</a>
+        </div>
+        <div class="contact-item">
+            <i class="fa-brands fa-linkedin"></i><a target="_blank" href="https://www.linkedin.com/in/germain-godefroid-581454260/">Linkedin</a>
+        </div>
+    </div>
+    <footer class="text-center">
+        <p> &copy; Germain Godefroid, <script type="text/javascript">var year = new Date();document.write(year.getFullYear());</script>
+        </p>
+    </footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+<script>
+    window.addEventListener('DOMContentLoaded',()=>{
+        document.querySelectorAll('.shell-block').forEach(block=>{
+            block.addEventListener('click',()=>{
+                navigator.clipboard.writeText(block.innerText.trimEnd()).then(()=>{
+                    block.classList.add('copied');
+                    setTimeout(()=>block.classList.remove('copied'),1500);
+                });
+            });
+        });
+    });
+</script>
+</body>
+</html>
