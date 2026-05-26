@@ -70,8 +70,8 @@
         <!-- CARD TEMPLATE -->
         <div class="col">
           <div class="card h-100 p-3">
-            <h3 class="card-title"><i class="fa-solid fa-shield-halved"></i> BunkerWeb</h3>
-            <p class="card-text">Nginx + ModSecurity + OWASP CRS out‑of‑the‑box. Acts as a drop‑in WAF & reverse‑proxy for everything.</p>
+            <h3 class="card-title"><i class="fa-solid fa-shield-halved"></i> Edge WAF</h3>
+            <p class="card-text">Native nginx + ModSecurity (OWASP CRS) + fail2ban on dedicated reverse-proxy LXCs. Terminates TLS and filters traffic before it reaches app containers.</p>
           </div>
         </div>
 
@@ -121,12 +121,24 @@
     <!-- MONITORING -->
     <section class="container-fluid">
       <h2 class="mb-4">Monitoring & Alerting</h2>
+      <p class="mb-4">
+        Logs from the hypervisor and monitored LXCs are centralized with Fluent Bit into OpenSearch.
+        ElastAlert2 evaluates custom rules and pushes Discord notifications for SSH access, WAF blocks,
+        reverse shell indicators, and stack health. A separate watchdog covers Proxmox login events via Telegram.
+        <a href="monitoring.html">Full write-up: Monitoring Stack documentation</a>.
+      </p>
       <div class="row g-4">
-        <div class="col-md-8">
+        <div class="col-md-6">
           <div class="card p-3 h-100">
-            <h3 class="card-title"><i class="fa-solid fa-bell"></i> Proxmox Login Watchdog</h3>
+            <h3 class="card-title"><i class="fa-solid fa-chart-line"></i> Centralized logstack</h3>
+            <p class="mb-0">Fluent Bit agents, OpenSearch, OpenSearch Dashboards, ElastAlert2, and a custom Discord alerter. Edge WAF and app logs feed the same pipeline.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card p-3 h-100">
+            <h3 class="card-title"><i class="fa-solid fa-bell"></i> Proxmox Login Watchdog</h3>
             <p>A Python script tails <code>journalctl</code> for <em>pvedaemon</em> logins and pushes instant Telegram alerts on success or failure.</p>
-            <a href="https://github.com/ggodefroid/pve-notifier" class="stretched-link" target="_blank" rel="noopener noreferrer">GitHub — pve‑notifier</a>
+            <a href="https://github.com/ggodefroid/pve-notifier" target="_blank" rel="noopener noreferrer">GitHub - pve-notifier</a>
           </div>
         </div>
         <div class="col-md-4 text-center">
