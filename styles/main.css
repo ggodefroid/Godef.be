@@ -1,5 +1,22 @@
 @import url('https://fonts.googleapis.com/css2?family=Aleo:wght@400;700&display=swap');
 
+html {
+    scroll-behavior: smooth;
+}
+
+.page-section {
+    scroll-margin-top: 3rem;
+    padding-top: 6rem;
+    padding-bottom: 7rem;
+}
+
+.page-section:first-of-type {
+    padding-top: 0;
+}
+
+.page-end-spacer {
+    min-height: 10vh;
+}
 
 header{
     border-bottom: solid 1px #747d8c;
